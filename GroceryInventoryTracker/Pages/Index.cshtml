@@ -4,7 +4,64 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="inventory-page">
+    <header class="mb-4">
+        <h1>Grocery Inventory Tracker</h1>
+        <p class="lead">Employee Inventory Dashboard</p>
+    </header>
+
+    <section class="search-area mb-3">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search products..." aria-label="Search" />
+            <button class="btn btn-primary" type="button">Search</button>
+        </div>
+    </section>
+
+    <section class="product-list">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity Stored</th>
+                        <th>Quantity On Shelves</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Products?.Any() != true)
+                    {
+                        <tr><td colspan="3">No products available.</td></tr>
+                    }
+                    else
+                    {
+                        foreach (var p in Model.Products)
+                        {
+                            <tr class="product-row" data-product-id="@p.Id" data-product-name="@p.Name" style="cursor:pointer;">
+                                <td>@p.Name</td>
+                                <td>@p.QuantityStored</td>
+                                <td>@p.QuantityOnShelves</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="custom-modal" role="dialog" aria-hidden="true">
+        <div class="custom-modal-dialog">
+            <div class="custom-modal-content">
+                <div class="custom-modal-header">
+                    <h5 id="productModalTitle">Product Details</h5>
+                    <button id="productModalClose" class="btn-close" aria-label="Close">×</button>
+                </div>
+                <div class="custom-modal-body" id="productModalBody">
+                    <!-- Shipment details loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="~/js/inventory.js"></script>
