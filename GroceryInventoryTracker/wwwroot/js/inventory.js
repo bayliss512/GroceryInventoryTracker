@@ -35,11 +35,11 @@ document.addEventListener('DOMContentLoaded', function () {
         closeModal();
     });
 
-    // Attach to product rows
-    document.querySelectorAll('.product-row').forEach(row => {
-        row.addEventListener('click', async function () {
-            const id = row.getAttribute('data-product-id');
-            const name = row.getAttribute('data-product-name');
+    // Attach to product cards
+    document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', async function () {
+            const id = card.getAttribute('data-product-id');
+            const name = card.getAttribute('data-product-name');
             if (!id) return;
             modalTitle!.textContent = name || 'Product Details';
             modalBody!.innerHTML = '<p class="muted">Loading shipments...</p>';

@@ -25,11 +25,35 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Initialize database
+// Initialize database (apply migrations if available)
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
-    db.Database.EnsureCreated();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        // First, ensure the database and tables are created
+        var dbCreated = db.Database.EnsureCreated();
+        if (dbCreated)
+        {
+            logger.LogInformation("Database created with schema and seed data.");
+        }
+
+        // Then try to apply migrations for tracking
+        try
+        {
+            db.Database.Migrate();
+            logger.LogInformation("Migrations applied successfully.");
+        }
+        catch (Exception migrateEx)
+        {
+            logger.LogWarning(migrateEx, "Migration tracking failed but database was created with EnsureCreated.");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Failed to initialize database during startup. Application will continue but database features may not work until properly initialized.");
+    }
 }
 
 app.UseHttpsRedirection();
