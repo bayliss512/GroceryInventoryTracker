@@ -23,8 +23,8 @@ SELECT
 	p.Name,
 	c.Name AS Category,
 	p.QuantityStored AS [Warehouse/Storage],
-	p.QuantityOnShelves AS [Store Shelves],
-	(p.QuantityStored + p.QuantityOnShelves) AS [Total Available]
+	p.QuantityOnSalesFloor AS [Store Shelves],
+	(p.QuantityStored + p.QuantityOnSalesFloor) AS [Total Available]
 FROM Products p
 LEFT JOIN Categories c ON p.CategoryId = c.Id
 ORDER BY p.Id;

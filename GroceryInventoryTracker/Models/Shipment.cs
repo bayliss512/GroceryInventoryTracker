@@ -19,6 +19,9 @@ namespace GroceryInventoryTracker.Models
 
         public int Quantity { get; set; }
 
+        [Required]
+        public string Location { get; set; } = "InStorage"; // "OnFloor" or "InStorage"
+
         public Product? Product { get; set; }
     }
 }

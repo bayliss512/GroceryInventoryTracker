@@ -84,12 +84,6 @@ namespace GroceryInventoryTracker.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("QuantityOnShelves")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuantityStored")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -102,72 +96,56 @@ namespace GroceryInventoryTracker.Migrations
                             Id = 1,
                             CategoryId = 1,
                             ImagePath = "https://images.unsplash.com/photo-1560806e614-56f27138e5de?w=400&h=400&fit=crop",
-                            Name = "Apples",
-                            QuantityOnShelves = 45,
-                            QuantityStored = 150
+                            Name = "Apples"
                         },
                         new
                         {
                             Id = 2,
                             CategoryId = 1,
                             ImagePath = "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop",
-                            Name = "Bananas",
-                            QuantityOnShelves = 60,
-                            QuantityStored = 120
+                            Name = "Bananas"
                         },
                         new
                         {
                             Id = 3,
                             CategoryId = 2,
                             ImagePath = "https://images.unsplash.com/photo-1550583724-b2692b25a968?w=400&h=400&fit=crop",
-                            Name = "Milk",
-                            QuantityOnShelves = 20,
-                            QuantityStored = 80
+                            Name = "Milk"
                         },
                         new
                         {
                             Id = 4,
                             CategoryId = 3,
                             ImagePath = "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=400&fit=crop",
-                            Name = "Bread",
-                            QuantityOnShelves = 25,
-                            QuantityStored = 50
+                            Name = "Bread"
                         },
                         new
                         {
                             Id = 5,
                             CategoryId = 2,
                             ImagePath = "https://images.unsplash.com/photo-1585590954945-f8e1ef4f1f4e?w=400&h=400&fit=crop",
-                            Name = "Eggs",
-                            QuantityOnShelves = 40,
-                            QuantityStored = 200
+                            Name = "Eggs"
                         },
                         new
                         {
                             Id = 6,
                             CategoryId = 5,
                             ImagePath = "https://images.unsplash.com/photo-1586190936819-754668823f66?w=400&h=400&fit=crop",
-                            Name = "Rice",
-                            QuantityOnShelves = 30,
-                            QuantityStored = 100
+                            Name = "Rice"
                         },
                         new
                         {
                             Id = 7,
                             CategoryId = 4,
                             ImagePath = "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&h=400&fit=crop",
-                            Name = "Chicken Breast",
-                            QuantityOnShelves = 15,
-                            QuantityStored = 75
+                            Name = "Chicken Breast"
                         },
                         new
                         {
                             Id = 8,
                             CategoryId = 5,
                             ImagePath = "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=400&fit=crop",
-                            Name = "Pasta",
-                            QuantityOnShelves = 35,
-                            QuantityStored = 90
+                            Name = "Pasta"
                         });
                 });
 
@@ -188,6 +166,11 @@ namespace GroceryInventoryTracker.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasDefaultValue("InStorage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ShipmentNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -205,6 +188,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 8, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 1,
                             Quantity = 25,
+                            Location = "InStorage",
                             ShipmentNumber = "1001"
                         },
                         new
@@ -213,6 +197,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 8, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 1,
                             Quantity = 60,
+                            Location = "OnFloor",
                             ShipmentNumber = "1002"
                         },
                         new
@@ -221,6 +206,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 8, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 2,
                             Quantity = 50,
+                            Location = "InStorage",
                             ShipmentNumber = "2001"
                         },
                         new
@@ -229,6 +215,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 8, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 2,
                             Quantity = 70,
+                            Location = "OnFloor",
                             ShipmentNumber = "2002"
                         },
                         new
@@ -237,6 +224,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 7, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 3,
                             Quantity = 40,
+                            Location = "InStorage",
                             ShipmentNumber = "3001"
                         },
                         new
@@ -245,6 +233,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 8, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 3,
                             Quantity = 40,
+                            Location = "OnFloor",
                             ShipmentNumber = "3002"
                         },
                         new
@@ -253,6 +242,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 8, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 4,
                             Quantity = 20,
+                            Location = "InStorage",
                             ShipmentNumber = "4001"
                         },
                         new
@@ -261,6 +251,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 8, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 4,
                             Quantity = 30,
+                            Location = "OnFloor",
                             ShipmentNumber = "4002"
                         },
                         new
@@ -269,6 +260,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 5,
                             Quantity = 100,
+                            Location = "InStorage",
                             ShipmentNumber = "5001"
                         },
                         new
@@ -277,6 +269,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 9, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 5,
                             Quantity = 100,
+                            Location = "OnFloor",
                             ShipmentNumber = "5002"
                         },
                         new
@@ -285,6 +278,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2027, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 6,
                             Quantity = 50,
+                            Location = "InStorage",
                             ShipmentNumber = "6001"
                         },
                         new
@@ -293,6 +287,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2027, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 6,
                             Quantity = 50,
+                            Location = "OnFloor",
                             ShipmentNumber = "6002"
                         },
                         new
@@ -301,6 +296,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 8, 22, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 7,
                             Quantity = 40,
+                            Location = "InStorage",
                             ShipmentNumber = "7001"
                         },
                         new
@@ -309,6 +305,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2026, 9, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 7,
                             Quantity = 35,
+                            Location = "OnFloor",
                             ShipmentNumber = "7002"
                         },
                         new
@@ -317,6 +314,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2027, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 8,
                             Quantity = 50,
+                            Location = "InStorage",
                             ShipmentNumber = "8001"
                         },
                         new
@@ -325,6 +323,7 @@ namespace GroceryInventoryTracker.Migrations
                             ExpirationDate = new DateTime(2027, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProductId = 8,
                             Quantity = 40,
+                            Location = "OnFloor",
                             ShipmentNumber = "8002"
                         });
                 });

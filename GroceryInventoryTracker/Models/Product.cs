@@ -10,9 +10,11 @@ namespace GroceryInventoryTracker.Models
         [Required]
         public string Name { get; set; } = default!;
 
-        public int QuantityStored { get; set; }
+        // QuantityStored and QuantityOnSalesFloor are now calculated properties
+        // that sum shipments based on their Location
+        public int QuantityStored => Shipments.Where(s => s.Location == "InStorage").Sum(s => s.Quantity);
 
-        public int QuantityOnShelves { get; set; }
+        public int QuantityOnSalesFloor => Shipments.Where(s => s.Location == "OnFloor").Sum(s => s.Quantity);
 
         // Category relationship (added for Phase 6)
         public int CategoryId { get; set; }

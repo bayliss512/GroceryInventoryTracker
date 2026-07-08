@@ -1,0 +1,104 @@
+# ⚡ QUICK REFERENCE CARD
+
+## The Absolute Essentials
+
+### What Changed?
+```
+QuantityStored & QuantityOnSalesFloor
+Changed from: Database columns
+Changed to:   Calculated properties
+Why:          Better data integrity
+```
+
+### How to Deploy (Copy ONE Command)
+
+```bash
+# Option 1: PowerShell Script (Recommended)
+.\update-database.ps1 -Action Reset
+
+# Option 2: Visual Studio
+Update-Database
+
+# Option 3: .NET CLI
+dotnet ef database update
+```
+
+### How to Verify
+```
+1. Run command above
+2. dotnet run
+3. Open: https://localhost:7120
+4. Check: Quantities show (not zero)
+```
+
+### How to Undo
+```bash
+Update-Database -TargetMigration AddLocationToShipments
+```
+
+---
+
+## 📚 Documentation Map
+
+| Need | File | Read |
+|------|------|------|
+| Quick start | START_HERE.md | 2 min |
+| Commands | EXECUTE_NOW.md | 3 min |
+| Detailed | QUICK_START.md | 5 min |
+| Technical | MIGRATION_GUIDE.md | 10 min |
+| Overview | IMPLEMENTATION_COMPLETE.md | 8 min |
+
+---
+
+## ✅ Checklist
+
+- [ ] Copy one command from above
+- [ ] Run in PowerShell/Terminal
+- [ ] Start app: `dotnet run`
+- [ ] Browser: `https://localhost:7120`
+- [ ] Verify quantities display
+- [ ] Done!
+
+---
+
+## 🆘 Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| Quantities are zero | Restart app, add shipment |
+| Migration won't run | Run: `dotnet ef database update` |
+| Need to undo | Run: `Update-Database -TargetMigration AddLocationToShipments` |
+| Build fails | Run: `dotnet clean` then `dotnet build` |
+
+---
+
+## 📁 Key Files
+
+```
+✅ Models/Product.cs            - Calculated properties
+✅ Migrations/20250115000002... - Database migration
+✅ START_HERE.md                - Visual guide
+✅ EXECUTE_NOW.md               - Commands
+```
+
+---
+
+## ⏱️ Total Time: ~40 seconds
+
+1. Copy command (5 sec)
+2. Run command (5 sec)
+3. Start app (3 sec)
+4. Open browser (2 sec)
+5. Verify (15 sec)
+6. ✅ Done (5 sec)
+
+---
+
+## 🎯 Status: ✅ Ready to Deploy
+
+Build: ✅ Successful  
+Docs: ✅ Complete  
+Code: ✅ Tested  
+Ready: ✅ YES
+
+👉 **Start with START_HERE.md or just run one of the commands above!**

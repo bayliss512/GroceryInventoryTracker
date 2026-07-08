@@ -89,6 +89,39 @@ body {
   padding: 1rem;
 }
 
+/* Shipment table styling in modal */
+.custom-modal-body .table {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.custom-modal-body .table thead {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.custom-modal-body .table thead th {
+  font-weight: 600;
+  color: #495057;
+  padding: 0.75rem;
+  vertical-align: middle;
+}
+
+.custom-modal-body .table tbody td {
+  padding: 0.75rem;
+  vertical-align: middle;
+}
+
+.custom-modal-body .table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.custom-modal-body .badge {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+  font-weight: 500;
+}
+
 .btn-close {
   border: none;
   background: transparent;

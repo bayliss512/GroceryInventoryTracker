@@ -34,7 +34,7 @@ namespace GroceryInventoryTracker.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     QuantityStored = table.Column<int>(type: "int", nullable: false),
-                    QuantityOnShelves = table.Column<int>(type: "int", nullable: false),
+                    QuantityOnSalesFloor = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -85,7 +85,7 @@ namespace GroceryInventoryTracker.Migrations
 
             migrationBuilder.InsertData(
                 table: "Products",
-                columns: new[] { "Id", "CategoryId", "ImagePath", "Name", "QuantityOnShelves", "QuantityStored" },
+                columns: new[] { "Id", "CategoryId", "ImagePath", "Name", "QuantityOnSalesFloor", "QuantityStored" },
                 values: new object[,]
                 {
                     { 1, 1, "https://images.unsplash.com/photo-1560806e614-56f27138e5de?w=400&h=400&fit=crop", "Apples", 45, 150 },

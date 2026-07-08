@@ -86,7 +86,8 @@ namespace GroceryInventoryTracker.Pages
                     s.Id,
                     shipmentNumber = s.ShipmentNumber,
                     expirationDate = s.ExpirationDate,
-                    quantity = s.Quantity
+                    quantity = s.Quantity,
+                    location = s.Location
                 }).ToList();
 
                 return new JsonResult(result);

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 
 namespace GroceryInventoryTracker.Services
 {
@@ -13,17 +14,21 @@ namespace GroceryInventoryTracker.Services
     {
         private readonly string _imageDirectory;
         private readonly string _webImagePath;
+        private readonly ILogger<ProductService> _logger;
         private static readonly object _lockObj = new object();
         private string[] _cachedImageFiles;
         private DateTime _cacheTime;
         private const int CACHE_DURATION_MINUTES = 30;
 
-        public ImagePathResolver(string physicalImageDirectory, string webImagePath)
+        public ImagePathResolver(string physicalImageDirectory, string webImagePath, ILogger<ProductService> logger = null)
         {
             _imageDirectory = physicalImageDirectory;
             _webImagePath = webImagePath;
+            _logger = logger;
             _cachedImageFiles = null;
             _cacheTime = DateTime.MinValue;
+
+            _logger?.LogInformation($"ImagePathResolver initialized with directory: {physicalImageDirectory}");
         }
 
         /// <summary>
@@ -80,7 +85,12 @@ namespace GroceryInventoryTracker.Services
                         .Select(Path.GetFileName)
                         .ToArray();
                     _cacheTime = DateTime.UtcNow;
+                    _logger?.LogInformation($"Loaded {_cachedImageFiles.Length} image files from {_imageDirectory}");
                     return _cachedImageFiles;
+                }
+                else
+                {
+                    _logger?.LogWarning($"Image directory not found: {_imageDirectory}");
                 }
 
                 return null;
@@ -100,7 +110,9 @@ namespace GroceryInventoryTracker.Services
                 var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file);
                 if (fileNameWithoutExt.Equals(searchName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return Path.Combine(_webImagePath, file);
+                    var result = Path.Combine(_webImagePath, file);
+                    _logger?.LogInformation($"Exact match found for '{productName}': {result}");
+                    return result;
                 }
             }
 

@@ -31,47 +31,50 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    modalClose?.addEventListener('click', function () {
-        closeModal();
-    });
+    if (modalClose) {
+        modalClose.addEventListener('click', function () {
+            closeModal();
+        });
+    }
 
     // Attach to product cards
-    document.querySelectorAll('.product-card').forEach(card => {
-        card.addEventListener('click', async function () {
+    document.querySelectorAll('.product-card').forEach(function(card) {
+        card.addEventListener('click', function () {
             const id = card.getAttribute('data-product-id');
             const name = card.getAttribute('data-product-name');
             if (!id) return;
-            modalTitle!.textContent = name || 'Product Details';
-            modalBody!.innerHTML = '<p class="muted">Loading shipments...</p>';
+
+            if (modalTitle) modalTitle.textContent = name || 'Product Details';
+            if (modalBody) modalBody.innerHTML = '<p class="muted">Loading shipments...</p>';
             openModal();
 
-            try {
-                const resp = await fetch(`/Index?handler=Shipments&productId=${id}`);
-                if (!resp.ok) throw new Error('Network error');
-                const data = await resp.json();
-                if (!Array.isArray(data) || data.length === 0) {
-                    modalBody!.innerHTML = '<p>No shipments available.</p>';
-                    return;
-                }
+            fetch('/Index?handler=Shipments&productId=' + id)
+                .then(function(resp) {
+                    if (!resp.ok) throw new Error('Network error');
+                    return resp.json();
+                })
+                .then(function(data) {
+                    if (!Array.isArray(data) || data.length === 0) {
+                        if (modalBody) modalBody.innerHTML = '<p>No shipments available.</p>';
+                        return;
+                    }
 
-                const rows = data.map(s => {
-                    const exp = new Date(s.expirationDate).toLocaleDateString();
-                    return `<tr><td>${s.shipmentNumber}</td><td>${exp}</td><td>${s.quantity}</td></tr>`;
-                }).join('');
+                    const rows = data.map(function(s) {
+                        const exp = new Date(s.expirationDate).toLocaleDateString();
+                        const locationBadge = s.location === 'OnFloor' 
+                            ? '<span class="badge bg-success">On Sales Floor</span>' 
+                            : '<span class="badge bg-info">In Storage</span>';
+                        return '<tr><td>' + s.shipmentNumber + '</td><td>' + exp + '</td><td>' + s.quantity + '</td><td>' + locationBadge + '</td></tr>';
+                    }).join('');
 
-                modalBody!.innerHTML = `
-                    <table class="table table-sm">
-                        <thead>
-                            <tr><th>Shipment Number</th><th>Expiration Date</th><th>Quantity</th></tr>
-                        </thead>
-                        <tbody>
-                            ${rows}
-                        </tbody>
-                    </table>
-                `;
-            } catch (err) {
-                modalBody!.innerHTML = '<p class="text-danger">Failed to load shipments.</p>';
-            }
+                    if (modalBody) {
+                        modalBody.innerHTML = '<table class="table table-sm"><thead><tr><th>Shipment Number</th><th>Expiration Date</th><th>Quantity</th><th>Location</th></tr></thead><tbody>' + rows + '</tbody></table>';
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Error loading shipments:', err);
+                    if (modalBody) modalBody.innerHTML = '<p class="text-danger">Failed to load shipments.</p>';
+                });
         });
     });
 });

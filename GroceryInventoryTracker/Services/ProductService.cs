@@ -9,18 +9,29 @@ namespace GroceryInventoryTracker.Services
     {
         private readonly InventoryDbContext _db;
         private readonly ImagePathResolver _imagePathResolver;
+        private readonly ILogger<ProductService> _logger;
 
         // Image directory constants
         private const string PRODUCT_IMAGES_DIRECTORY = "Images/ProductImages";
         private const string WEB_IMAGE_PATH = "/Images/ProductImages";
 
-        public ProductService(InventoryDbContext db, IWebHostEnvironment webHostEnvironment)
+        public ProductService(InventoryDbContext db, IWebHostEnvironment webHostEnvironment, ILogger<ProductService> logger)
         {
             _db = db;
+            _logger = logger;
 
             // Initialize image path resolver
-            var physicalImagePath = Path.Combine(webHostEnvironment.WebRootPath, PRODUCT_IMAGES_DIRECTORY);
-            _imagePathResolver = new ImagePathResolver(physicalImagePath, WEB_IMAGE_PATH);
+            try
+            {
+                var physicalImagePath = Path.Combine(webHostEnvironment.WebRootPath, PRODUCT_IMAGES_DIRECTORY);
+                _logger.LogInformation($"Image resolver initialized with path: {physicalImagePath}");
+                _imagePathResolver = new ImagePathResolver(physicalImagePath, WEB_IMAGE_PATH, logger);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialize image path resolver");
+                _imagePathResolver = new ImagePathResolver(string.Empty, WEB_IMAGE_PATH, logger);
+            }
         }
 
         // Simple paged result helper
@@ -112,7 +123,20 @@ namespace GroceryInventoryTracker.Services
         /// </summary>
         public string ResolveProductImagePath(string productName)
         {
-            return _imagePathResolver.ResolveImagePath(productName);
+            try
+            {
+                var result = _imagePathResolver.ResolveImagePath(productName);
+                if (string.IsNullOrEmpty(result))
+                {
+                    _logger.LogWarning($"Could not resolve image path for product: {productName}");
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error resolving image path for product: {productName}");
+                return null;
+            }
         }
 
         /// <summary>
