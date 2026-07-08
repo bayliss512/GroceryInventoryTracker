@@ -1,3 +1,4 @@
+using GroceryInventoryTracker.Services;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -12,9 +13,14 @@ namespace GroceryInventoryTracker.Models
 
         // QuantityStored and QuantityOnSalesFloor are now calculated properties
         // that sum shipments based on their Location
-        public int QuantityStored => Shipments.Where(s => s.Location == "InStorage").Sum(s => s.Quantity);
+        public int QuantityStored;
 
-        public int QuantityOnSalesFloor => Shipments.Where(s => s.Location == "OnFloor").Sum(s => s.Quantity);
+        public int QuantityOnSalesFloor;
+public void UpdateQuantities(ICollection<Shipment> shipments)
+        {
+            QuantityStored = shipments.Where(s => s.Location == "InStorage").Sum(s => s.Quantity);
+            QuantityOnSalesFloor = shipments.Where(s => s.Location == "OnFloor").Sum(s => s.Quantity);
+        }
 
         // Category relationship (added for Phase 6)
         public int CategoryId { get; set; }
