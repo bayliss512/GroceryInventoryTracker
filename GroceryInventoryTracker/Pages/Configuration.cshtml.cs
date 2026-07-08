@@ -144,6 +144,17 @@ namespace GroceryInventoryTracker.Pages
             return Page();
         }
 
+        public async Task<IActionResult> OnPostGenerateConfigurableShipmentAsync()
+        {
+            // TODO - Show pop-up menu that allows user to select product, quantity, and expiration date. Then create shipment based on user input.
+            // If a field is left blank, grey out the option to enter the product. 
+            // If the shipment number is left blank, generate a unique shipment number automatically.
+
+
+
+            return Page();
+        }
+
         private int GenerateRandomQuantity(Random random)
         {
             // Generate quantities divisible by 2 or 5
