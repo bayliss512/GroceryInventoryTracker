@@ -1,4 +1,4 @@
-using GroceryInventoryTracker.Data;
+﻿using GroceryInventoryTracker.Data;
 using GroceryInventoryTracker.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -20,10 +20,23 @@ namespace GroceryInventoryTracker.Pages
         public string? SuccessMessage { get; set; }
         public string? ErrorMessage { get; set; }
 
+        public List<Product> Products { get; set; } = new();
+
+        [BindProperty]
+        public ConfigurableShipmentInput Input { get; set; } = new();
+
+        public class ConfigurableShipmentInput
+        {
+            public int? ProductId { get; set; }
+            public int? Quantity { get; set; }
+            public DateTime? ExpirationDate { get; set; }
+            public string? ShipmentNumber { get; set; }
+        }
+
         public async Task OnGetAsync()
         {
             // Page loads with current state
-            await Task.CompletedTask;
+            Products = await _db.Products.OrderBy(p => p.Name).ToListAsync();
         }
 
         public async Task<IActionResult> OnPostInitializeDatabaseAsync()
@@ -146,12 +159,72 @@ namespace GroceryInventoryTracker.Pages
 
         public async Task<IActionResult> OnPostGenerateConfigurableShipmentAsync()
         {
-            // TODO - Show pop-up menu that allows user to select product, quantity, and expiration date. Then create shipment based on user input.
-            // If a field is left blank, grey out the option to enter the product. 
-            // If the shipment number is left blank, generate a unique shipment number automatically.
+            try
+            {
+                _logger.LogInformation("Attempting to generate configurable shipment...");
 
+                var products = await _db.Products.ToListAsync();
+                if (products.Count == 0)
+                {
+                    ErrorMessage = "No products available. Initialize the database first to add products.";
+                    Products = products;
+                    return Page();
+                }
 
+                var random = new Random();
 
+                // Resolve product: use the selected product, or pick a random one if left blank
+                Product product;
+                if (Input.ProductId.HasValue)
+                {
+                    var selectedProduct = products.FirstOrDefault(p => p.Id == Input.ProductId.Value);
+                    if (selectedProduct == null)
+                    {
+                        ErrorMessage = "Selected product could not be found.";
+                        Products = products;
+                        return Page();
+                    }
+                    product = selectedProduct;
+                }
+                else
+                {
+                    product = products[random.Next(products.Count)];
+                }
+
+                // Resolve quantity: use the provided value, or generate a random valid quantity if left blank
+                var quantity = Input.Quantity.HasValue && Input.Quantity.Value > 0
+                    ? Input.Quantity.Value
+                    : GenerateRandomQuantity(random);
+
+                // Resolve expiration date: use the provided value, or generate a random future date if left blank
+                var expirationDate = Input.ExpirationDate ?? DateTime.Now.AddDays(random.Next(1, 366));
+
+                // Resolve shipment number: use the provided value, or generate a unique one if left blank
+                var shipmentNumber = string.IsNullOrWhiteSpace(Input.ShipmentNumber)
+                    ? $"SHP-{DateTime.Now:yyyyMMddHHmmss}-{random.Next(1000, 9999)}"
+                    : Input.ShipmentNumber.Trim();
+
+                var shipment = new Shipment
+                {
+                    ProductId = product.Id,
+                    ShipmentNumber = shipmentNumber,
+                    ExpirationDate = expirationDate,
+                    Quantity = quantity
+                };
+
+                _db.Shipments.Add(shipment);
+                await _db.SaveChangesAsync();
+
+                SuccessMessage = $"Shipment created! Product: {product.Name}, Quantity: {quantity}, Expires: {expirationDate:MMM dd, yyyy}, Shipment #: {shipmentNumber}";
+                _logger.LogInformation($"Configurable shipment generated for product {product.Name} with quantity {quantity}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate configurable shipment");
+                ErrorMessage = $"Failed to generate configurable shipment: {ex.Message}";
+            }
+
+            Products = await _db.Products.OrderBy(p => p.Name).ToListAsync();
             return Page();
         }
 
