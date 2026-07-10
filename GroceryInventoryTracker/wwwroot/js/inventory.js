@@ -59,12 +59,32 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
+                    const EXPIRING_SOON_DAYS = 7;
+                    const now = new Date();
+                    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
                     const rows = data.map(function(s) {
-                        const exp = new Date(s.expirationDate).toLocaleDateString();
-                        const locationBadge = s.location === 'OnFloor' 
-                            ? '<span class="badge bg-success">On Sales Floor</span>' 
+                        const expDate = new Date(s.expirationDate);
+                        const exp = expDate.toLocaleDateString();
+
+                        // Compare whole days between the expiration date and the start of today
+                        const expDay = new Date(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
+                        const daysUntilExpiry = Math.round((expDay - startOfToday) / 86400000);
+
+                        var expirationBadge = '';
+                        if (daysUntilExpiry < 0) {
+                            expirationBadge = ' <span class="badge bg-danger">Expired</span>';
+                        } else if (daysUntilExpiry <= EXPIRING_SOON_DAYS) {
+                            const label = daysUntilExpiry === 0
+                                ? 'Expires today'
+                                : 'Expires in ' + daysUntilExpiry + ' day' + (daysUntilExpiry === 1 ? '' : 's');
+                            expirationBadge = ' <span class="badge bg-warning text-dark">' + label + '</span>';
+                        }
+
+                        const locationBadge = s.location === 'OnFloor'
+                            ? '<span class="badge bg-success">On Sales Floor</span>'
                             : '<span class="badge bg-info">In Storage</span>';
-                        return '<tr><td>' + s.shipmentNumber + '</td><td>' + exp + '</td><td>' + s.quantity + '</td><td>' + locationBadge + '</td></tr>';
+                        return '<tr><td>' + s.shipmentNumber + '</td><td>' + exp + expirationBadge + '</td><td>' + s.quantity + '</td><td>' + locationBadge + '</td></tr>';
                     }).join('');
 
                     if (modalBody) {

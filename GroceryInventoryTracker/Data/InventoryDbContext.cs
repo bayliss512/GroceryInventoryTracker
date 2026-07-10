@@ -13,6 +13,32 @@ namespace GroceryInventoryTracker.Data
         public DbSet<Product> Products { get; set; } = null!;
         public DbSet<Shipment> Shipments { get; set; } = null!;
         public DbSet<Category> Categories { get; set; } = null!;
+        public DbSet<User> Users { get; set; } = null!;
+
+        /// <summary>
+        /// Creates or upgrades the Users table on databases that predate it.
+        /// EnsureCreated only builds schema for brand-new databases, so
+        /// later additions have to be applied here.
+        /// </summary>
+        public async Task EnsureUsersSchemaAsync()
+        {
+            await Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID(N'[Users]') IS NULL
+BEGIN
+    CREATE TABLE [Users] (
+        [Id] int NOT NULL IDENTITY,
+        [Username] nvarchar(64) NOT NULL,
+        [PasswordHash] nvarchar(max) NOT NULL,
+        [IconSvg] nvarchar(max) NOT NULL,
+        [ProfileImagePath] nvarchar(max) NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_Users] PRIMARY KEY ([Id])
+    );
+    CREATE UNIQUE INDEX [IX_Users_Username] ON [Users] ([Username]);
+END;
+IF COL_LENGTH(N'[Users]', 'ProfileImagePath') IS NULL
+    ALTER TABLE [Users] ADD [ProfileImagePath] nvarchar(max) NULL;");
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,6 +62,15 @@ namespace GroceryInventoryTracker.Data
                     .WithMany(p => p.Shipments)
                     .HasForeignKey(s => s.ProductId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<User>(b =>
+            {
+                b.HasKey(u => u.Id);
+                b.Property(u => u.Username).IsRequired().HasMaxLength(64);
+                b.Property(u => u.PasswordHash).IsRequired();
+                b.Property(u => u.IconSvg).IsRequired();
+                b.HasIndex(u => u.Username).IsUnique();
             });
 
             // Seed categories

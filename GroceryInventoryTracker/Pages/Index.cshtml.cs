@@ -24,6 +24,11 @@ namespace GroceryInventoryTracker.Pages
             [FromQuery]
             public string? Search { get; set; }
 
+            [FromQuery]
+            public int? CategoryId { get; set; }
+
+            public List<Category> Categories { get; set; } = new();
+
             [FromQuery(Name = "Page")]
             public int CurrentPage { get; set; } = 1;
 
@@ -40,7 +45,8 @@ namespace GroceryInventoryTracker.Pages
                 try
                 {
                     var pageToUse = CurrentPage < 1 ? 1 : CurrentPage;
-                    var result = await _service.GetProductsAsync(Search, pageToUse, PageSize);
+                    Categories = await _service.GetCategoriesAsync();
+                    var result = await _service.GetProductsAsync(Search, CategoryId, pageToUse, PageSize);
                     Products = result.Items;
 
                     foreach (var product in Products)

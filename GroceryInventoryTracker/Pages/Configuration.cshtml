@@ -105,29 +105,50 @@
 
 				<div class="row g-4">
 					<div class="col-md-6">
+						<h6 class="fw-bold">Categories Table</h6>
+						<ul class="small">
+							<li><strong>Name:</strong> Category display name</li>
+							<li><strong>21 seed categories:</strong> Produce, Meat &amp; Seafood, Dairy &amp; Refrigerated, Bakery, Frozen Foods, and more</li>
+						</ul>
+					</div>
+					<div class="col-md-6">
 						<h6 class="fw-bold">Products Table</h6>
 						<ul class="small">
-							<li><strong>QuantityStored:</strong> Inventory in storage/warehouse</li>
-							<li><strong>QuantityOnSalesFloor:</strong> Inventory available on store shelves</li>
-							<li><strong>8 seed products:</strong> Apples, Bananas, Milk, Bread, Eggs, Rice, Chicken Breast, Pasta</li>
+							<li><strong>Name:</strong> Product display name</li>
+							<li><strong>CategoryId:</strong> The category the product belongs to</li>
+							<li><strong>ImagePath:</strong> Product image in local storage</li>
+							<li><strong>288 seed products</strong> across all 21 categories</li>
 						</ul>
 					</div>
 					<div class="col-md-6">
 						<h6 class="fw-bold">Shipments Table</h6>
 						<ul class="small">
 							<li><strong>Tracks incoming inventory:</strong> When products arrive at the store</li>
+							<li><strong>ShipmentNumber:</strong> Unique identifier for the shipment</li>
 							<li><strong>ExpirationDate:</strong> When the shipment expires</li>
 							<li><strong>Quantity:</strong> How many units in this shipment</li>
-							<li><strong>16 seed shipments:</strong> 2-4 per product</li>
+							<li><strong>Location:</strong> "InStorage" (warehouse) or "OnFloor" (sales floor)</li>
+							<li><strong>Seed shipments:</strong> 2-3 for each of the first 50 products</li>
+						</ul>
+					</div>
+					<div class="col-md-6">
+						<h6 class="fw-bold">Users Table</h6>
+						<ul class="small">
+							<li><strong>Username:</strong> Unique login name (max 64 characters)</li>
+							<li><strong>PasswordHash:</strong> Salted PBKDF2 hash &mdash; the plaintext password is never stored</li>
+							<li><strong>IconSvg:</strong> Random identicon generated at sign-up</li>
+							<li><strong>ProfileImagePath:</strong> Optional uploaded profile picture (stored in local image storage)</li>
+							<li><strong>CreatedAt:</strong> When the account was created</li>
+							<li><strong>No seed users:</strong> Accounts are created via the Login popup</li>
 						</ul>
 					</div>
 				</div>
 
 				<div class="alert alert-info mt-3 small">
 					<strong>ℹ️ Inventory Levels:</strong><br>
-					- <strong>QuantityStored:</strong> Represents items in the warehouse/storage area (the "back" inventory)<br>
-					- <strong>QuantityOnSalesFloor:</strong> Represents items currently on the store shelves for customers (the "front" inventory)<br>
-					Together they show the total available inventory.
+					- <strong>QuantityStored:</strong> Items in the warehouse/storage area (the "back" inventory)<br>
+					- <strong>QuantityOnSalesFloor:</strong> Items currently on the store shelves for customers (the "front" inventory)<br>
+					Both are calculated by summing each product's shipments by Location &mdash; together they show the total available inventory.
 				</div>
 			</div>
 		</div>

@@ -1,0 +1,26 @@
+@page
+@model AccountModel
+@{
+    ViewData["Title"] = "Account";
+}
+
+<div class="account-page">
+    <header class="mb-4">
+        <h1>Account</h1>
+        <p class="lead">Login or Sign Up</p>
+    </header>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error:</strong> @Model.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card" style="max-width: 480px;">
+        <div class="card-body">
+            <partial name="_LoginForm" />
+        </div>
+    </div>
+</div>

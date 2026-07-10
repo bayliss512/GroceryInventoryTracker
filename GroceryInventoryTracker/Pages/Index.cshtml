@@ -21,6 +21,13 @@
     <section class="search-area mb-3">
         <form method="get">
             <div class="input-group">
+                <select name="CategoryId" class="form-select category-filter" aria-label="Category" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    @foreach (var c in Model.Categories)
+                    {
+                        <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
+                    }
+                </select>
                 <input name="Search" value="@Model.Search" type="text" class="form-control" placeholder="Search products or categories..." aria-label="Search" />
                 <button class="btn btn-primary" type="submit">Search</button>
             </div>
@@ -89,16 +96,16 @@
             <nav aria-label="Page navigation" class="pagination-nav">
                 <ul class="pagination">
                     <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="?Search=@Model.Search&Page=@(Model.CurrentPage - 1)">Previous</a>
+                        <a class="page-link" href="?Search=@Model.Search&CategoryId=@Model.CategoryId&Page=@(Model.CurrentPage - 1)">Previous</a>
                     </li>
                     @for (int i = 1; i <= Model.TotalPages; i++)
                     {
                         <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                            <a class="page-link" href="?Search=@Model.Search&Page=@i">@i</a>
+                            <a class="page-link" href="?Search=@Model.Search&CategoryId=@Model.CategoryId&Page=@i">@i</a>
                         </li>
                     }
                     <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
-                        <a class="page-link" href="?Search=@Model.Search&Page=@(Model.CurrentPage + 1)">Next</a>
+                        <a class="page-link" href="?Search=@Model.Search&CategoryId=@Model.CategoryId&Page=@(Model.CurrentPage + 1)">Next</a>
                     </li>
                 </ul>
             </nav>

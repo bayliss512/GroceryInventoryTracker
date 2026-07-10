@@ -14,6 +14,14 @@ builder.Services.AddDbContext<GroceryInventoryTracker.Data.InventoryDbContext>(o
     options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<GroceryInventoryTracker.Services.ProductService>();
+builder.Services.AddScoped<GroceryInventoryTracker.Services.UserService>();
+
+builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    });
 
 var app = builder.Build();
 
@@ -49,6 +57,9 @@ using (var scope = app.Services.CreateScope())
         {
             logger.LogWarning(migrateEx, "Migration tracking failed but database was created with EnsureCreated.");
         }
+
+        // Upgrade the Users table on databases created before it (or before its latest columns) existed
+        db.EnsureUsersSchemaAsync().GetAwaiter().GetResult();
     }
     catch (Exception ex)
     {
@@ -60,6 +71,7 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

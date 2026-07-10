@@ -54,14 +54,19 @@ namespace GroceryInventoryTracker.Pages
                     _logger.LogWarning(migrateEx, "Migration tracking failed but tables may have been created by EnsureCreated.");
                 }
 
+                // The Users table was added after the initial schema; EnsureCreated does not
+                // update existing databases, so create/upgrade it here if needed.
+                await _db.EnsureUsersSchemaAsync();
+
                 // Verify tables were created by checking if we can query them
                 var productCount = await _db.Products.CountAsync();
                 var categoryCount = await _db.Categories.CountAsync();
                 var shipmentCount = await _db.Shipments.CountAsync();
+                var userCount = await _db.Users.CountAsync();
 
                 SuccessMessage = $"Database initialized successfully! " +
-                    $"Categories: {categoryCount}, Products: {productCount}, Shipments: {shipmentCount}";
-                _logger.LogInformation($"Database verification - Categories: {categoryCount}, Products: {productCount}, Shipments: {shipmentCount}");
+                    $"Categories: {categoryCount}, Products: {productCount}, Shipments: {shipmentCount}, Users: {userCount}";
+                _logger.LogInformation($"Database verification - Categories: {categoryCount}, Products: {productCount}, Shipments: {shipmentCount}, Users: {userCount}");
             }
             catch (Exception ex)
             {

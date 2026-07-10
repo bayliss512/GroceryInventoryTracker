@@ -49,12 +49,25 @@ namespace GroceryInventoryTracker.Services
                 .ToListAsync();
         }
 
-        public async Task<PagedResult<Product>> GetProductsAsync(string? search, int page, int pageSize)
+        public async Task<List<Category>> GetCategoriesAsync()
+        {
+            return await _db.Categories
+                .AsNoTracking()
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
+
+        public async Task<PagedResult<Product>> GetProductsAsync(string? search, int? categoryId, int page, int pageSize)
         {
             var query = _db.Products
                 .Include(p => p.Category)
                 .AsNoTracking()
                 .AsQueryable();
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
 
             if (!string.IsNullOrWhiteSpace(search))
             {

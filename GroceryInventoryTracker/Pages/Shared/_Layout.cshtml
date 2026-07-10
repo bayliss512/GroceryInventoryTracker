@@ -30,6 +30,30 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
                     </ul>
+                    <div class="navbar-login d-flex align-items-center gap-2">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            var profileImage = User.FindFirst("ProfileImagePath")?.Value;
+                            <a asp-page="/Settings" class="user-icon" title="User settings">
+                                @if (!string.IsNullOrEmpty(profileImage))
+                                {
+                                    <img src="@profileImage" alt="@User.Identity.Name" class="user-avatar" />
+                                }
+                                else
+                                {
+                                    @Html.Raw(User.FindFirst("IconSvg")?.Value)
+                                }
+                            </a>
+                            <a asp-page="/Settings" class="text-dark text-decoration-none">@User.Identity.Name</a>
+                            <form method="post" asp-page="/Account" asp-page-handler="Logout" class="d-inline mb-0">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">Log Out</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button id="loginButton" type="button" class="btn btn-outline-primary btn-sm">Login</button>
+                        }
+                    </div>
                 </div>
             </div>
         </nav>
@@ -39,6 +63,24 @@
             @RenderBody()
         </main>
     </div>
+
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <!-- Login Modal -->
+        <div id="loginModal" class="custom-modal" role="dialog" aria-hidden="true">
+            <div class="custom-modal-dialog">
+                <div class="custom-modal-content">
+                    <div class="custom-modal-header">
+                        <h5 id="loginModalTitle">Login</h5>
+                        <button id="loginModalClose" class="btn-close" aria-label="Close">&times;</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <partial name="_LoginForm" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
     <footer class="border-top footer text-muted">
         <div class="container">
@@ -50,6 +92,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/inventory.js" asp-append-version="true"></script>
+    <script src="~/js/login.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
