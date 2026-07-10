@@ -78,17 +78,15 @@
 					</div>
 
 					<div class="col-md-6">
-						<form method="post" asp-page-handler="GenerateConfigurableShipment">
-							<div class="card border-primary">
-								<div class="card-body">
-									<h6 class="card-title text-primary">Generate Configurable Shipment</h6>
-									<p class="card-text text-muted small">Create a shipment with user provided qualities.</p>
-									<button type="submit" class="btn btn-primary">
-										<i class="bi bi-plus-circle"></i> Generate Shipment
-									</button>
-								</div>
+						<div class="card border-primary generate-configurable-shipment" style="cursor:pointer;">
+							<div class="card-body">
+								<h6 class="card-title text-primary">Generate Configurable Shipment</h6>
+								<p class="card-text text-muted small">Create a shipment with user provided qualities.</p>
+								<button type="button" class="btn btn-primary">
+									<i class="bi bi-plus-circle"></i> Generate Shipment
+								</button>
 							</div>
-						</form>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -153,7 +151,50 @@
 			</div>
 		</div>
 	</section>
+
+	<!-- Configurable Shipment Modal -->
+	<div id="productModal" class="custom-modal" role="dialog" aria-hidden="true">
+		<div class="custom-modal-dialog">
+			<div class="custom-modal-content">
+				<div class="custom-modal-header">
+					<h5 id="productModalTitle">Generate Configurable Shipment</h5>
+					<button id="productModalClose" class="btn-close" aria-label="Close">&times;</button>
+				</div>
+				<div class="custom-modal-body" id="productModalBody">
+					<form method="post" asp-page-handler="GenerateConfigurableShipment">
+						<div class="mb-3">
+							<label asp-for="Input.ProductId" class="form-label">Product</label>
+							<select asp-for="Input.ProductId" class="form-select">
+								<option value="">-- Random --</option>
+								@foreach (var p in Model.Products)
+								{
+									<option value="@p.Id">@p.Name</option>
+								}
+							</select>
+						</div>
+						<div class="mb-3">
+							<label asp-for="Input.Quantity" class="form-label">Quantity</label>
+							<input asp-for="Input.Quantity" type="number" min="1" class="form-control" placeholder="Leave blank for random quantity" />
+						</div>
+						<div class="mb-3">
+							<label asp-for="Input.ExpirationDate" class="form-label">Expiration Date</label>
+							<input asp-for="Input.ExpirationDate" type="date" class="form-control" placeholder="Leave blank for random date" />
+						</div>
+						<div class="mb-3">
+							<label asp-for="Input.ShipmentNumber" class="form-label">Shipment Number</label>
+							<input asp-for="Input.ShipmentNumber" type="text" class="form-control" placeholder="Leave blank to auto-generate" />
+						</div>
+						<button type="submit" class="btn btn-primary">
+							<i class="bi bi-plus-circle"></i> Create Shipment
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
+
+<script src="~/js/addShipment.js"></script>
 
 <style>
 	.configuration-page {
