@@ -19,8 +19,8 @@
     }
 
     <section class="search-area mb-3">
-        <form method="get">
-            <div class="input-group">
+        <form method="get" style="width: 600px;">
+            <div class="input-group" style="width: 600px;">
                 <select name="CategoryId" class="form-select category-filter" aria-label="Category" onchange="this.form.submit()">
                     <option value="">All</option>
                     @foreach (var c in Model.Categories)
