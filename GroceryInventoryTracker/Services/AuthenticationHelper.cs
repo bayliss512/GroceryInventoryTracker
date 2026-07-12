@@ -16,7 +16,8 @@ namespace GroceryInventoryTracker.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim("IconSvg", user.IconSvg)
+                new Claim("IconSvg", user.IconSvg),
+                new Claim("IsAdmin", user.IsAdmin ? "true" : "false")
             };
 
             if (!string.IsNullOrEmpty(user.ProfileImagePath))

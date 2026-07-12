@@ -23,6 +23,11 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
     });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireClaim("IsAdmin", "true"));
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -41,4 +41,20 @@ document.addEventListener('DOMContentLoaded', function () {
             openModal();
         });
     }
+
+    // Show/hide password toggle (delegated so it also works inside the login modal)
+    document.addEventListener('click', function (e) {
+        const toggle = e.target.closest('.password-toggle');
+        if (!toggle) return;
+
+        const input = document.getElementById(toggle.dataset.target);
+        if (!input) return;
+
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        toggle.setAttribute('aria-pressed', String(isHidden));
+        toggle.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+        toggle.querySelector('.icon-eye').style.display = isHidden ? 'none' : '';
+        toggle.querySelector('.icon-eye-slash').style.display = isHidden ? '' : 'none';
+    });
 });

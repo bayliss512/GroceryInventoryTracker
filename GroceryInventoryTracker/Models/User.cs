@@ -22,5 +22,8 @@ namespace GroceryInventoryTracker.Models
         public string? ProfileImagePath { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        // Grants access to the /Admin page (user management). The first account created is made admin automatically.
+        public bool IsAdmin { get; set; }
     }
 }

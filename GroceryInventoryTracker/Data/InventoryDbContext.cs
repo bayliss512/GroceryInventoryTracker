@@ -32,12 +32,15 @@ BEGIN
         [IconSvg] nvarchar(max) NOT NULL,
         [ProfileImagePath] nvarchar(max) NULL,
         [CreatedAt] datetime2 NOT NULL,
+        [IsAdmin] bit NOT NULL DEFAULT 0,
         CONSTRAINT [PK_Users] PRIMARY KEY ([Id])
     );
     CREATE UNIQUE INDEX [IX_Users_Username] ON [Users] ([Username]);
 END;
 IF COL_LENGTH(N'[Users]', 'ProfileImagePath') IS NULL
-    ALTER TABLE [Users] ADD [ProfileImagePath] nvarchar(max) NULL;");
+    ALTER TABLE [Users] ADD [ProfileImagePath] nvarchar(max) NULL;
+IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
+    ALTER TABLE [Users] ADD [IsAdmin] bit NOT NULL DEFAULT 0;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -70,6 +73,7 @@ IF COL_LENGTH(N'[Users]', 'ProfileImagePath') IS NULL
                 b.Property(u => u.Username).IsRequired().HasMaxLength(64);
                 b.Property(u => u.PasswordHash).IsRequired();
                 b.Property(u => u.IconSvg).IsRequired();
+                b.Property(u => u.IsAdmin).IsRequired().HasDefaultValue(false);
                 b.HasIndex(u => u.Username).IsUnique();
             });
 

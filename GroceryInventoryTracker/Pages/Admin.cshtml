@@ -1,0 +1,103 @@
+@page
+@model AdminModel
+@{
+    ViewData["Title"] = "Admin";
+}
+
+<div class="admin-page">
+    <header class="mb-4">
+        <h1>Admin</h1>
+        <p class="lead">Manage users and permissions.</p>
+    </header>
+
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Success!</strong> @Model.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error:</strong> @Model.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Users</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Created</th>
+                            <th>Permissions</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td class="d-flex align-items-center gap-2">
+                                    <span class="admin-avatar">
+                                        @if (!string.IsNullOrEmpty(user.ProfileImagePath))
+                                        {
+                                            <img src="@user.ProfileImagePath" alt="@user.Username" />
+                                        }
+                                        else
+                                        {
+                                            @Html.Raw(user.IconSvg)
+                                        }
+                                    </span>
+                                    @user.Username
+                                    @if (string.Equals(user.Username, User.Identity!.Name, StringComparison.Ordinal))
+                                    {
+                                        <span class="badge bg-secondary">You</span>
+                                    }
+                                </td>
+                                <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    @if (user.IsAdmin)
+                                    {
+                                        <span class="badge bg-primary">Admin</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark border">Standard</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2">
+                                        @if (user.IsAdmin)
+                                        {
+                                            <form method="post" asp-page-handler="RevokeAdmin" asp-route-id="@user.Id">
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm">Revoke Admin</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form method="post" asp-page-handler="MakeAdmin" asp-route-id="@user.Id">
+                                                <button type="submit" class="btn btn-outline-primary btn-sm">Make Admin</button>
+                                            </form>
+                                        }
+                                        <form method="post" asp-page-handler="Delete" asp-route-id="@user.Id"
+                                              onsubmit="return confirm('Delete user &quot;@user.Username&quot;? This cannot be undone.');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

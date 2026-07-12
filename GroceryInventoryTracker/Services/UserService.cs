@@ -52,12 +52,15 @@ namespace GroceryInventoryTracker.Services
 
         public async Task<User> CreateUserAsync(string username, string password)
         {
+            var isFirstUser = !await _db.Users.AnyAsync();
+
             var user = new User
             {
                 Username = username,
                 PasswordHash = HashPassword(password),
                 IconSvg = GenerateIdenticonSvg(),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsAdmin = isFirstUser
             };
 
             _db.Users.Add(user);
@@ -114,6 +117,69 @@ namespace GroceryInventoryTracker.Services
             user.ProfileImagePath = path;
             await _db.SaveChangesAsync();
             return user;
+        }
+
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            return await _db.Users
+                .AsNoTracking()
+                .OrderBy(u => u.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<User?> GetByIdAsync(int id)
+        {
+            return await _db.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        /// <summary>
+        /// Grants or revokes admin access for a user. Returns false if the user does not
+        /// exist, or if this would leave the system with no remaining admins.
+        /// </summary>
+        public async Task<bool> SetAdminAsync(int userId, bool isAdmin)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (user.IsAdmin && !isAdmin && await _db.Users.CountAsync(u => u.IsAdmin) <= 1)
+            {
+                return false;
+            }
+
+            user.IsAdmin = isAdmin;
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation($"User '{user.Username}' admin access set to {isAdmin}.");
+            return true;
+        }
+
+        /// <summary>
+        /// Deletes a user. Returns false if the user does not exist, or if the user is the
+        /// last remaining admin.
+        /// </summary>
+        public async Task<bool> DeleteUserAsync(int userId)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (user.IsAdmin && await _db.Users.CountAsync(u => u.IsAdmin) <= 1)
+            {
+                return false;
+            }
+
+            _db.Users.Remove(user);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation($"Deleted user '{user.Username}'.");
+            return true;
         }
 
         private static string HashPassword(string password)
