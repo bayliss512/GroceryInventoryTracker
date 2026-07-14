@@ -381,3 +381,53 @@ body {
   font-size: 0.9rem;
   margin-top: 0.75rem;
 }
+
+/* Dashboard */
+.stat-tile {
+  height: 100%;
+  border-left: 4px solid #6c757d;
+}
+
+.stat-tile-warning {
+  border-left-color: #e65100;
+}
+
+.stat-tile-danger {
+  border-left-color: #c62828;
+}
+
+.stat-tile-info {
+  border-left-color: #0d6efd;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.stat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: #495057;
+}
+
+.stat-list li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stat-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}

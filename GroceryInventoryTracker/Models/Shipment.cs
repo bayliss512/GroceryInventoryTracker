@@ -22,6 +22,8 @@ namespace GroceryInventoryTracker.Models
         [Required]
         public string Location { get; set; } = "InStorage"; // "OnFloor" or "InStorage"
 
+        public DateTime CreatedAt { get; set; }
+
         public Product? Product { get; set; }
 
         public int? SupplierId { get; set; }

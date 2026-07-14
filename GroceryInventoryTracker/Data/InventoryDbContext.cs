@@ -459,6 +459,9 @@ IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
             var shipments = new List<Shipment>();
             int shipmentId = 1;
             var random = new Random(42); // Use seed for reproducibility
+            // Separate instance so adding CreatedAt doesn't shift the draws above and change
+            // the existing seeded quantities/locations/expiration dates/shipment counts.
+            var createdAtRandom = new Random(99);
             var seedAnchorDate = new DateTime(2026, 1, 1);
 
             foreach (var product in products.Take(50)) // Add shipments for first 50 products
@@ -472,7 +475,8 @@ IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
                         ShipmentNumber = $"SHP-{product.Id:000}-{i + 1:00}",
                         ExpirationDate = seedAnchorDate.AddDays(random.Next(30, 365)),
                         Quantity = random.Next(10, 100),
-                        Location = random.Next(0, 2) == 0 ? "InStorage" : "OnFloor"
+                        Location = random.Next(0, 2) == 0 ? "InStorage" : "OnFloor",
+                        CreatedAt = seedAnchorDate.AddDays(-createdAtRandom.Next(1, 60))
                     });
                 }
             }

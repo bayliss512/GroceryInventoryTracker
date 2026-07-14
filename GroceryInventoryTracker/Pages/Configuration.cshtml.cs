@@ -1,5 +1,6 @@
 ﻿using GroceryInventoryTracker.Data;
 using GroceryInventoryTracker.Models;
+using GroceryInventoryTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,11 +12,13 @@ namespace GroceryInventoryTracker.Pages
     public class ConfigurationModel : PageModel
     {
         private readonly InventoryDbContext _db;
+        private readonly ShipmentService _shipments;
         private readonly ILogger<ConfigurationModel> _logger;
 
-        public ConfigurationModel(InventoryDbContext db, ILogger<ConfigurationModel> logger)
+        public ConfigurationModel(InventoryDbContext db, ShipmentService shipments, ILogger<ConfigurationModel> logger)
         {
             _db = db;
+            _shipments = shipments;
             _logger = logger;
         }
 
@@ -141,16 +144,13 @@ namespace GroceryInventoryTracker.Pages
                 // Create a unique shipment number
                 var shipmentNumber = $"SHP-{DateTime.Now:yyyyMMddHHmmss}-{random.Next(1000, 9999)}";
 
-                var shipment = new Shipment
+                await _shipments.CreateAsync(new Shipment
                 {
                     ProductId = randomProduct.Id,
                     ShipmentNumber = shipmentNumber,
                     ExpirationDate = expirationDate,
                     Quantity = quantity
-                };
-
-                _db.Shipments.Add(shipment);
-                await _db.SaveChangesAsync();
+                });
 
                 SuccessMessage = $"Random shipment created! Product: {randomProduct.Name}, Quantity: {quantity}, Expires: {expirationDate:MMM dd, yyyy}";
                 _logger.LogInformation($"Random shipment generated for product {randomProduct.Name} with quantity {quantity}");
@@ -211,16 +211,13 @@ namespace GroceryInventoryTracker.Pages
                     ? $"SHP-{DateTime.Now:yyyyMMddHHmmss}-{random.Next(1000, 9999)}"
                     : Input.ShipmentNumber.Trim();
 
-                var shipment = new Shipment
+                await _shipments.CreateAsync(new Shipment
                 {
                     ProductId = product.Id,
                     ShipmentNumber = shipmentNumber,
                     ExpirationDate = expirationDate,
                     Quantity = quantity
-                };
-
-                _db.Shipments.Add(shipment);
-                await _db.SaveChangesAsync();
+                });
 
                 SuccessMessage = $"Shipment created! Product: {product.Name}, Quantity: {quantity}, Expires: {expirationDate:MMM dd, yyyy}, Shipment #: {shipmentNumber}";
                 _logger.LogInformation($"Configurable shipment generated for product {product.Name} with quantity {quantity}");

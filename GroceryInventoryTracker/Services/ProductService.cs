@@ -165,29 +165,6 @@ namespace GroceryInventoryTracker.Services
                 .ToListAsync();
         }
 
-        public async Task<Shipment> CreateShipmentAsync(int productId, string shipmentNumber, DateTime expirationDate, int quantity)
-        {
-            // Verify product exists
-            var product = await _db.Products.FindAsync(productId);
-            if (product == null)
-            {
-                throw new ArgumentException($"Product with ID {productId} not found.");
-            }
-
-            var shipment = new Shipment
-            {
-                ProductId = productId,
-                ShipmentNumber = shipmentNumber,
-                ExpirationDate = expirationDate,
-                Quantity = quantity
-            };
-
-            _db.Shipments.Add(shipment);
-            await _db.SaveChangesAsync();
-
-            return shipment;
-        }
-
         /// <summary>
         /// Resolves the image path for a product based on its name using smart matching.
         /// </summary>

@@ -18,6 +18,7 @@ builder.Services.AddScoped<GroceryInventoryTracker.Services.UserService>();
 builder.Services.AddScoped<GroceryInventoryTracker.Services.CategoryService>();
 builder.Services.AddScoped<GroceryInventoryTracker.Services.SupplierService>();
 builder.Services.AddScoped<GroceryInventoryTracker.Services.ShipmentService>();
+builder.Services.AddScoped<GroceryInventoryTracker.Services.DashboardService>();
 
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

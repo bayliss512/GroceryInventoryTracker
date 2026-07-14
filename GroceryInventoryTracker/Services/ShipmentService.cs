@@ -44,6 +44,7 @@ namespace GroceryInventoryTracker.Services
 
         public async Task<Shipment> CreateAsync(Shipment shipment)
         {
+            shipment.CreatedAt = DateTime.UtcNow;
             _db.Shipments.Add(shipment);
             await _db.SaveChangesAsync();
 

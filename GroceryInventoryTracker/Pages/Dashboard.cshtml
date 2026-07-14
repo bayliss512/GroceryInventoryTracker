@@ -1,0 +1,145 @@
+@page
+@model GroceryInventoryTracker.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-page">
+    <header class="mb-4">
+        <h1>Dashboard</h1>
+        <p class="lead mb-0">Operational overview of the store's inventory.</p>
+    </header>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card stat-tile">
+                <div class="card-body">
+                    <div class="stat-number" id="stat-total-products">@Model.Summary.TotalProducts</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-tile stat-tile-warning">
+                <div class="card-body">
+                    <div class="stat-number" id="stat-low-stock-count">@Model.Summary.LowStockCount</div>
+                    <div class="stat-label">Low Stock (&lt; @Model.LowStockThreshold)</div>
+                    <ul class="stat-list" id="list-low-stock">
+                        @foreach (var name in Model.Summary.LowStockProducts)
+                        {
+                            <li>@name</li>
+                        }
+                    </ul>
+                    <a asp-page="/Products/Index" class="stat-link">View all products →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-tile stat-tile-danger">
+                <div class="card-body">
+                    <div class="stat-number" id="stat-out-of-stock-count">@Model.Summary.OutOfStockCount</div>
+                    <div class="stat-label">Out of Stock</div>
+                    <ul class="stat-list" id="list-out-of-stock">
+                        @foreach (var name in Model.Summary.OutOfStockProducts)
+                        {
+                            <li>@name</li>
+                        }
+                    </ul>
+                    <a asp-page="/Products/Index" class="stat-link">View all products →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-tile stat-tile-info">
+                <div class="card-body">
+                    <div class="stat-number" id="stat-expiring-soon-count">@Model.Summary.ExpiringSoonCount</div>
+                    <div class="stat-label">Expiring Soon (@Model.ExpiringSoonDays days)</div>
+                    <ul class="stat-list" id="list-expiring-soon">
+                        @foreach (var s in Model.Summary.ExpiringSoonShipments)
+                        {
+                            <li>@s.ProductName — @s.ExpirationDate.ToString("MMM dd")</li>
+                        }
+                    </ul>
+                    <a asp-page="/Shipments/Index" class="stat-link">View all shipments →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Shipments</h5>
+                    <a asp-page="/Shipments/Index" class="small">View all →</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Supplier</th>
+                                    <th>Qty</th>
+                                    <th>Location</th>
+                                    <th>Received</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-recent-shipments">
+                                @foreach (var s in Model.Summary.RecentShipments)
+                                {
+                                    <tr>
+                                        <td>@s.ProductName</td>
+                                        <td>@(s.SupplierName ?? "—")</td>
+                                        <td>@s.Quantity</td>
+                                        <td>@s.Location</td>
+                                        <td>@s.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        @if (Model.Summary.RecentShipments.Count == 0)
+                        {
+                            <p class="text-muted mb-0">No shipments yet.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Signups</h5>
+                    <a asp-page="/Admin" class="small">View all →</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-recent-users">
+                                @foreach (var u in Model.Summary.RecentUsers)
+                                {
+                                    <tr>
+                                        <td>@u.Username</td>
+                                        <td>@u.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        @if (Model.Summary.RecentUsers.Count == 0)
+                        {
+                            <p class="text-muted mb-0">No accounts yet.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/dashboard.js" asp-append-version="true"></script>
