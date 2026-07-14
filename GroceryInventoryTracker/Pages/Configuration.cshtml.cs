@@ -1,11 +1,13 @@
 ﻿using GroceryInventoryTracker.Data;
 using GroceryInventoryTracker.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace GroceryInventoryTracker.Pages
 {
+    [Authorize(Policy = "Admin")]
     public class ConfigurationModel : PageModel
     {
         private readonly InventoryDbContext _db;

@@ -51,12 +51,8 @@ namespace GroceryInventoryTracker.Pages
 
                     foreach (var product in Products)
                     {
-                    // Update quantities for each product based on its shipments
-                        var shipments = await _service.GetShipmentsForProductAsync(product.Id);
-                        product.UpdateQuantities(shipments);
-
-                    // Resolve image paths using smart algorithm
-                    var resolvedPath = _service.ResolveProductImagePath(product.Name);
+                        // Resolve image paths using smart algorithm
+                        var resolvedPath = _service.ResolveProductImagePath(product.Name);
                         if (!string.IsNullOrEmpty(resolvedPath))
                         {
                             product.ImagePath = resolvedPath;

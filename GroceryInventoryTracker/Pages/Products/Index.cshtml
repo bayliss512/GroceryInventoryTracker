@@ -1,0 +1,88 @@
+@page
+@model GroceryInventoryTracker.Pages.Products.IndexModel
+@{
+    ViewData["Title"] = "Manage Products";
+}
+
+<div class="products-manage-page">
+    <header class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h1>Manage Products</h1>
+            <p class="lead mb-0">Add, edit, and remove products in the catalog.</p>
+        </div>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-page="Create" class="btn btn-primary">New Product</a>
+        }
+    </header>
+
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Success!</strong> @Model.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error:</strong> @Model.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">All Products (@Model.Products.Count)</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Products.Count == 0)
+            {
+                <p class="text-muted mb-0">No products yet.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>In Storage</th>
+                                <th>On Sales Floor</th>
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <th class="text-end">Actions</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in Model.Products)
+                            {
+                                <tr>
+                                    <td>@product.Name</td>
+                                    <td>@(product.Category?.Name ?? "Uncategorized")</td>
+                                    <td>@product.QuantityStored</td>
+                                    <td>@product.QuantityOnSalesFloor</td>
+                                    @if (User.Identity?.IsAuthenticated == true)
+                                    {
+                                        <td class="text-end">
+                                            <div class="d-inline-flex gap-2">
+                                                <a asp-page="Edit" asp-route-id="@product.Id" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                                <form method="post" asp-page-handler="Delete" asp-route-id="@product.Id"
+                                                      onsubmit="return confirm('Delete product &quot;@product.Name&quot;? This cannot be undone.');">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

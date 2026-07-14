@@ -45,7 +45,9 @@ namespace GroceryInventoryTracker.Services
         {
             return await _db.Products
                 .Include(p => p.Category)
+                .Include(p => p.Shipments)
                 .AsNoTracking()
+                .OrderBy(p => p.Name)
                 .ToListAsync();
         }
 
@@ -61,6 +63,7 @@ namespace GroceryInventoryTracker.Services
         {
             var query = _db.Products
                 .Include(p => p.Category)
+                .Include(p => p.Shipments)
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -94,9 +97,63 @@ namespace GroceryInventoryTracker.Services
         public async Task<Product?> GetProductByIdAsync(int id)
         {
             return await _db.Products
+                .Include(p => p.Category)
                 .Include(p => p.Shipments)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<Product> CreateAsync(Product product)
+        {
+            _db.Products.Add(product);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Created product '{Name}'.", product.Name);
+            return product;
+        }
+
+        /// <summary>
+        /// Updates a product's editable fields. Returns false if the product does not exist.
+        /// </summary>
+        public async Task<bool> UpdateAsync(int id, Product updated)
+        {
+            var product = await _db.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null)
+            {
+                return false;
+            }
+
+            product.Name = updated.Name;
+            product.CategoryId = updated.CategoryId;
+            product.ImagePath = updated.ImagePath;
+
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// Deletes a product. Returns false if it doesn't exist, or a friendly error message
+        /// if it can't be deleted because shipments still reference it.
+        /// </summary>
+        public async Task<(bool Success, string? Error)> DeleteAsync(int id)
+        {
+            var product = await _db.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null)
+            {
+                return (false, "Product not found.");
+            }
+
+            var shipmentCount = await _db.Shipments.CountAsync(s => s.ProductId == id);
+            if (shipmentCount > 0)
+            {
+                return (false, $"Cannot delete '{product.Name}' — it has {shipmentCount} shipment(s) on record. Remove those shipments first.");
+            }
+
+            _db.Products.Remove(product);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Deleted product '{Name}'.", product.Name);
+            return (true, null);
         }
 
         public async Task<List<Shipment>> GetShipmentsForProductAsync(int productId)

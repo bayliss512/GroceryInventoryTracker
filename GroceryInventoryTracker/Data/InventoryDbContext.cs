@@ -13,6 +13,7 @@ namespace GroceryInventoryTracker.Data
         public DbSet<Product> Products { get; set; } = null!;
         public DbSet<Shipment> Shipments { get; set; } = null!;
         public DbSet<Category> Categories { get; set; } = null!;
+        public DbSet<Supplier> Suppliers { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
 
         /// <summary>
@@ -65,6 +66,16 @@ IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
                     .WithMany(p => p.Shipments)
                     .HasForeignKey(s => s.ProductId)
                     .OnDelete(DeleteBehavior.Cascade);
+                b.HasOne(s => s.Supplier)
+                    .WithMany(sup => sup.Shipments)
+                    .HasForeignKey(s => s.SupplierId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Supplier>(b =>
+            {
+                b.HasKey(s => s.Id);
+                b.Property(s => s.Name).IsRequired().HasMaxLength(200);
             });
 
             modelBuilder.Entity<User>(b =>
@@ -442,9 +453,13 @@ IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
             modelBuilder.Entity<Product>().HasData(products);
 
             // Seed shipments - sample shipments for variety
+            // Anchored to a fixed date (not DateTime.Now) so the seed data - and therefore the EF Core
+            // model snapshot - is deterministic between builds; HasData with a non-deterministic value
+            // makes EF think the model changes on every build and fails migration validation.
             var shipments = new List<Shipment>();
             int shipmentId = 1;
             var random = new Random(42); // Use seed for reproducibility
+            var seedAnchorDate = new DateTime(2026, 1, 1);
 
             foreach (var product in products.Take(50)) // Add shipments for first 50 products
             {
@@ -455,7 +470,7 @@ IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
                         Id = shipmentId++,
                         ProductId = product.Id,
                         ShipmentNumber = $"SHP-{product.Id:000}-{i + 1:00}",
-                        ExpirationDate = DateTime.Now.AddDays(random.Next(30, 365)),
+                        ExpirationDate = seedAnchorDate.AddDays(random.Next(30, 365)),
                         Quantity = random.Next(10, 100),
                         Location = random.Next(0, 2) == 0 ? "InStorage" : "OnFloor"
                     });

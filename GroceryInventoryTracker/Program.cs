@@ -15,11 +15,15 @@ builder.Services.AddDbContext<GroceryInventoryTracker.Data.InventoryDbContext>(o
 
 builder.Services.AddScoped<GroceryInventoryTracker.Services.ProductService>();
 builder.Services.AddScoped<GroceryInventoryTracker.Services.UserService>();
+builder.Services.AddScoped<GroceryInventoryTracker.Services.CategoryService>();
+builder.Services.AddScoped<GroceryInventoryTracker.Services.SupplierService>();
+builder.Services.AddScoped<GroceryInventoryTracker.Services.ShipmentService>();
 
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Account";
+        options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
     });
 

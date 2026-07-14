@@ -1,0 +1,88 @@
+@page
+@model GroceryInventoryTracker.Pages.Suppliers.IndexModel
+@{
+    ViewData["Title"] = "Suppliers";
+}
+
+<div class="suppliers-page">
+    <header class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h1>Suppliers</h1>
+            <p class="lead mb-0">Vendors that ship products to the store.</p>
+        </div>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-page="Create" class="btn btn-primary">New Supplier</a>
+        }
+    </header>
+
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Success!</strong> @Model.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error:</strong> @Model.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">All Suppliers</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Suppliers.Count == 0)
+            {
+                <p class="text-muted mb-0">No suppliers yet.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Contact</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <th class="text-end">Actions</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var supplier in Model.Suppliers)
+                            {
+                                <tr>
+                                    <td>@supplier.Name</td>
+                                    <td>@(supplier.ContactName ?? "—")</td>
+                                    <td>@(supplier.Phone ?? "—")</td>
+                                    <td>@(supplier.Email ?? "—")</td>
+                                    @if (User.Identity?.IsAuthenticated == true)
+                                    {
+                                        <td class="text-end">
+                                            <div class="d-inline-flex gap-2">
+                                                <a asp-page="Edit" asp-route-id="@supplier.Id" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                                <form method="post" asp-page-handler="Delete" asp-route-id="@supplier.Id"
+                                                      onsubmit="return confirm('Delete supplier &quot;@supplier.Name&quot;? This cannot be undone.');">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
