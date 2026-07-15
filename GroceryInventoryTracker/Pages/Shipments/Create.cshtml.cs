@@ -14,12 +14,14 @@ namespace GroceryInventoryTracker.Pages.Shipments
         private readonly ShipmentService _shipments;
         private readonly ProductService _products;
         private readonly SupplierService _suppliers;
+        private readonly AuditService _audit;
 
-        public CreateModel(ShipmentService shipments, ProductService products, SupplierService suppliers)
+        public CreateModel(ShipmentService shipments, ProductService products, SupplierService suppliers, AuditService audit)
         {
             _shipments = shipments;
             _products = products;
             _suppliers = suppliers;
+            _audit = audit;
         }
 
         [BindProperty]
@@ -87,6 +89,8 @@ namespace GroceryInventoryTracker.Pages.Shipments
                 Quantity = Input.Quantity,
                 Location = Input.Location
             });
+            await _audit.LogAsync(User.Identity?.Name, "ShipmentReceived",
+                $"Received shipment '{Input.ShipmentNumber.Trim()}' for '{selectedProduct.Name}': qty={Input.Quantity}, location={Input.Location}.");
 
             TempData["SuccessMessage"] = "Shipment created.";
             return RedirectToPage("Index");

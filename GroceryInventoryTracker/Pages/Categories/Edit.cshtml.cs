@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace GroceryInventoryTracker.Pages.Categories
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     public class EditModel : PageModel
     {
         private readonly CategoryService _categories;

@@ -10,7 +10,7 @@
             <h1>Suppliers</h1>
             <p class="lead mb-0">Vendors that ship products to the store.</p>
         </div>
-        @if (User.Identity?.IsAuthenticated == true)
+        @if (User.IsInRole("Administrator"))
         {
             <a asp-page="Create" class="btn btn-primary">New Supplier</a>
         }
@@ -51,7 +51,7 @@
                                 <th>Contact</th>
                                 <th>Phone</th>
                                 <th>Email</th>
-                                @if (User.Identity?.IsAuthenticated == true)
+                                @if (User.IsInRole("Administrator"))
                                 {
                                     <th class="text-end">Actions</th>
                                 }
@@ -65,7 +65,7 @@
                                     <td>@(supplier.ContactName ?? "—")</td>
                                     <td>@(supplier.Phone ?? "—")</td>
                                     <td>@(supplier.Email ?? "—")</td>
-                                    @if (User.Identity?.IsAuthenticated == true)
+                                    @if (User.IsInRole("Administrator"))
                                     {
                                         <td class="text-end">
                                             <div class="d-inline-flex gap-2">

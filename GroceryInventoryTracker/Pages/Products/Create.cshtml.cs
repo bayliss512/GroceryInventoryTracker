@@ -8,14 +8,16 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace GroceryInventoryTracker.Pages.Products
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     public class CreateModel : PageModel
     {
         private readonly ProductService _products;
+        private readonly AuditService _audit;
 
-        public CreateModel(ProductService products)
+        public CreateModel(ProductService products, AuditService audit)
         {
             _products = products;
+            _audit = audit;
         }
 
         [BindProperty]
@@ -58,6 +60,7 @@ namespace GroceryInventoryTracker.Pages.Products
                 ImagePath = string.IsNullOrWhiteSpace(Input.ImagePath) ? null : Input.ImagePath.Trim(),
                 IsPerishable = Input.IsPerishable
             });
+            await _audit.LogAsync(User.Identity?.Name, "ProductCreated", $"Created product '{Input.Name.Trim()}'.");
 
             TempData["SuccessMessage"] = "Product created.";
             return RedirectToPage("Index");

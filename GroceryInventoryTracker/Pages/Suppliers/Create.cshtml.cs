@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace GroceryInventoryTracker.Pages.Suppliers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     public class CreateModel : PageModel
     {
         private readonly SupplierService _suppliers;

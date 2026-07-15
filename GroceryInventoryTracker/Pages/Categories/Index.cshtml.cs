@@ -33,6 +33,10 @@ namespace GroceryInventoryTracker.Pages.Categories
             {
                 return RedirectToPage("/Account");
             }
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
 
             var (success, error) = await _categories.DeleteAsync(id);
             ErrorMessage = success ? null : error;

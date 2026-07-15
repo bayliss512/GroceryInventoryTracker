@@ -1,0 +1,50 @@
+@page
+@model GroceryInventoryTracker.Pages.Audit.IndexModel
+@{
+    ViewData["Title"] = "Audit History";
+}
+
+<div class="audit-page">
+    <header class="mb-4">
+        <h1>Audit History</h1>
+        <p class="lead mb-0">A record of inventory and user-management changes made in the system.</p>
+    </header>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Recent Activity (@Model.Entries.Count)</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Entries.Count == 0)
+            {
+                <p class="text-muted mb-0">No activity has been recorded yet.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Timestamp (UTC)</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entry in Model.Entries)
+                            {
+                                <tr>
+                                    <td class="text-nowrap">@entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                    <td>@entry.Username</td>
+                                    <td><span class="badge bg-secondary">@entry.Action</span></td>
+                                    <td>@entry.Details</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

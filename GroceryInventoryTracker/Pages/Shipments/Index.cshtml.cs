@@ -10,11 +10,13 @@ namespace GroceryInventoryTracker.Pages.Shipments
     {
         private readonly ShipmentService _shipments;
         private readonly ProductService _products;
+        private readonly AuditService _audit;
 
-        public IndexModel(ShipmentService shipments, ProductService products)
+        public IndexModel(ShipmentService shipments, ProductService products, AuditService audit)
         {
             _shipments = shipments;
             _products = products;
+            _audit = audit;
         }
 
         [TempData]
@@ -46,10 +48,21 @@ namespace GroceryInventoryTracker.Pages.Shipments
             {
                 return RedirectToPage("/Account");
             }
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
 
+            var shipment = await _shipments.GetByIdAsync(id);
             var success = await _shipments.DeleteAsync(id);
             ErrorMessage = success ? null : "Shipment not found.";
             SuccessMessage = success ? "Shipment deleted." : null;
+
+            if (success)
+            {
+                await _audit.LogAsync(User.Identity?.Name, "ShipmentDeleted",
+                    $"Deleted shipment '{shipment?.ShipmentNumber}' (Id={id}) for '{shipment?.Product?.Name}'.");
+            }
 
             return RedirectToPage(new { ProductId });
         }

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GroceryInventoryTracker.Pages
 {
-    [Authorize(Policy = "Admin")]
+    [Authorize(Roles = "Administrator")]
     public class ConfigurationModel : PageModel
     {
         private readonly InventoryDbContext _db;

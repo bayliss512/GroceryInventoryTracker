@@ -93,10 +93,13 @@
                                         <td class="text-end">
                                             <div class="d-inline-flex gap-2">
                                                 <a asp-page="Edit" asp-route-id="@shipment.Id" class="btn btn-outline-secondary btn-sm">Edit</a>
-                                                <form method="post" asp-page-handler="Delete" asp-route-id="@shipment.Id"
-                                                      onsubmit="return confirm('Delete shipment &quot;@shipment.ShipmentNumber&quot;? This cannot be undone.');">
-                                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
-                                                </form>
+                                                @if (User.IsInRole("Administrator"))
+                                                {
+                                                    <form method="post" asp-page-handler="Delete" asp-route-id="@shipment.Id"
+                                                          onsubmit="return confirm('Delete shipment &quot;@shipment.ShipmentNumber&quot;? This cannot be undone.');">
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                                    </form>
+                                                }
                                             </div>
                                         </td>
                                     }

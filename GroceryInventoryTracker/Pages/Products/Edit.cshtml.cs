@@ -8,14 +8,16 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace GroceryInventoryTracker.Pages.Products
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     public class EditModel : PageModel
     {
         private readonly ProductService _products;
+        private readonly AuditService _audit;
 
-        public EditModel(ProductService products)
+        public EditModel(ProductService products, AuditService audit)
         {
             _products = products;
+            _audit = audit;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -81,6 +83,9 @@ namespace GroceryInventoryTracker.Pages.Products
                 TempData["ErrorMessage"] = "Product not found.";
                 return RedirectToPage("Index");
             }
+
+            await _audit.LogAsync(User.Identity?.Name, "ProductModified",
+                $"Modified product '{Input.Name.Trim()}' (Id={Id}): category={Input.CategoryId}, perishable={Input.IsPerishable}.");
 
             TempData["SuccessMessage"] = "Product updated.";
             return RedirectToPage("Index");

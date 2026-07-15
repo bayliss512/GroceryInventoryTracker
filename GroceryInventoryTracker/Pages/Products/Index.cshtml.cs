@@ -8,10 +8,12 @@ namespace GroceryInventoryTracker.Pages.Products
     public class IndexModel : PageModel
     {
         private readonly ProductService _products;
+        private readonly AuditService _audit;
 
-        public IndexModel(ProductService products)
+        public IndexModel(ProductService products, AuditService audit)
         {
             _products = products;
+            _audit = audit;
         }
 
         [TempData]
@@ -33,10 +35,20 @@ namespace GroceryInventoryTracker.Pages.Products
             {
                 return RedirectToPage("/Account");
             }
+            if (!User.IsInRole("Administrator"))
+            {
+                return Forbid();
+            }
 
+            var product = await _products.GetProductByIdAsync(id);
             var (success, error) = await _products.DeleteAsync(id);
             ErrorMessage = success ? null : error;
             SuccessMessage = success ? "Product deleted." : null;
+
+            if (success)
+            {
+                await _audit.LogAsync(User.Identity?.Name, "ProductDeleted", $"Deleted product '{product?.Name}' (Id={id}).");
+            }
 
             return RedirectToPage();
         }

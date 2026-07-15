@@ -14,12 +14,14 @@ namespace GroceryInventoryTracker.Pages.Shipments
         private readonly ShipmentService _shipments;
         private readonly ProductService _products;
         private readonly SupplierService _suppliers;
+        private readonly AuditService _audit;
 
-        public EditModel(ShipmentService shipments, ProductService products, SupplierService suppliers)
+        public EditModel(ShipmentService shipments, ProductService products, SupplierService suppliers, AuditService audit)
         {
             _shipments = shipments;
             _products = products;
             _suppliers = suppliers;
+            _audit = audit;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -112,6 +114,9 @@ namespace GroceryInventoryTracker.Pages.Shipments
                 TempData["ErrorMessage"] = "Shipment not found.";
                 return RedirectToPage("Index");
             }
+
+            await _audit.LogAsync(User.Identity?.Name, "ShipmentUpdated",
+                $"Updated shipment '{Input.ShipmentNumber.Trim()}' (Id={Id}) for '{selectedProduct.Name}': qty={Input.Quantity}, location={Input.Location}.");
 
             TempData["SuccessMessage"] = "Shipment updated.";
             return RedirectToPage("Index");

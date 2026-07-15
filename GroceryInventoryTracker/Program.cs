@@ -19,6 +19,7 @@ builder.Services.AddScoped<GroceryInventoryTracker.Services.CategoryService>();
 builder.Services.AddScoped<GroceryInventoryTracker.Services.SupplierService>();
 builder.Services.AddScoped<GroceryInventoryTracker.Services.ShipmentService>();
 builder.Services.AddScoped<GroceryInventoryTracker.Services.DashboardService>();
+builder.Services.AddScoped<GroceryInventoryTracker.Services.AuditService>();
 
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -28,10 +29,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Admin", policy => policy.RequireClaim("IsAdmin", "true"));
-});
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 

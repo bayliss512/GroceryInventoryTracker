@@ -10,7 +10,7 @@
             <h1>Manage Products</h1>
             <p class="lead mb-0">Add, edit, and remove products in the catalog.</p>
         </div>
-        @if (User.Identity?.IsAuthenticated == true)
+        @if (User.IsInRole("Administrator"))
         {
             <a asp-page="Create" class="btn btn-primary">New Product</a>
         }
@@ -52,7 +52,7 @@
                                 <th>Perishable</th>
                                 <th>In Storage</th>
                                 <th>On Sales Floor</th>
-                                @if (User.Identity?.IsAuthenticated == true)
+                                @if (User.IsInRole("Administrator"))
                                 {
                                     <th class="text-end">Actions</th>
                                 }
@@ -76,7 +76,7 @@
                                     </td>
                                     <td>@product.QuantityStored</td>
                                     <td>@product.QuantityOnSalesFloor</td>
-                                    @if (User.Identity?.IsAuthenticated == true)
+                                    @if (User.IsInRole("Administrator"))
                                     {
                                         <td class="text-end">
                                             <div class="d-inline-flex gap-2">

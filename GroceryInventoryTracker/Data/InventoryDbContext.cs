@@ -15,6 +15,7 @@ namespace GroceryInventoryTracker.Data
         public DbSet<Category> Categories { get; set; } = null!;
         public DbSet<Supplier> Suppliers { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
+        public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
         /// <summary>
         /// Creates or upgrades the Users table on databases that predate it.
@@ -86,6 +87,15 @@ IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
                 b.Property(u => u.IconSvg).IsRequired();
                 b.Property(u => u.IsAdmin).IsRequired().HasDefaultValue(false);
                 b.HasIndex(u => u.Username).IsUnique();
+            });
+
+            modelBuilder.Entity<AuditLog>(b =>
+            {
+                b.HasKey(a => a.Id);
+                b.Property(a => a.Username).IsRequired().HasMaxLength(64);
+                b.Property(a => a.Action).IsRequired().HasMaxLength(100);
+                b.Property(a => a.Details).IsRequired();
+                b.HasIndex(a => a.Timestamp);
             });
 
             // Seed categories
