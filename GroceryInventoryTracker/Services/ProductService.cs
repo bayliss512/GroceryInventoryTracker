@@ -5,6 +5,21 @@ using System.IO;
 
 namespace GroceryInventoryTracker.Services
 {
+    public enum ExpirationFilter
+    {
+        All,
+        ExpiringSoon,
+        Expired
+    }
+
+    public enum ProductSortBy
+    {
+        Name,
+        Quantity,
+        Expiration,
+        RecentlyUpdated
+    }
+
     public class ProductService
     {
         private readonly InventoryDbContext _db;
@@ -59,7 +74,14 @@ namespace GroceryInventoryTracker.Services
                 .ToListAsync();
         }
 
-        public async Task<PagedResult<Product>> GetProductsAsync(string? search, int? categoryId, int page, int pageSize)
+        public async Task<PagedResult<Product>> GetProductsAsync(
+            string? search,
+            int? categoryId,
+            int page,
+            int pageSize,
+            int? supplierId = null,
+            ExpirationFilter expirationFilter = ExpirationFilter.All,
+            ProductSortBy sortBy = ProductSortBy.Name)
         {
             var query = _db.Products
                 .Include(p => p.Category)
@@ -78,11 +100,44 @@ namespace GroceryInventoryTracker.Services
                 query = query.Where(p => p.Name.ToLower().Contains(term) || (p.Category != null && p.Category.Name.ToLower().Contains(term)));
             }
 
+            if (supplierId.HasValue)
+            {
+                query = query.Where(p => p.Shipments.Any(s => s.SupplierId == supplierId.Value));
+            }
+
+            var today = DateTime.Today;
+            var expiringSoonEnd = today.AddDays(DashboardService.ExpiringSoonDays);
+
+            if (expirationFilter == ExpirationFilter.ExpiringSoon)
+            {
+                query = query.Where(p => p.Shipments.Any(s => s.ExpirationDate >= today && s.ExpirationDate <= expiringSoonEnd));
+            }
+            else if (expirationFilter == ExpirationFilter.Expired)
+            {
+                query = query.Where(p => p.Shipments.Any(s => s.ExpirationDate < today));
+            }
+
             var total = await query.CountAsync();
 
+            query = sortBy switch
+            {
+                ProductSortBy.Quantity => query
+                    .OrderByDescending(p => p.Shipments.Sum(s => (int?)s.Quantity) ?? 0)
+                    .ThenBy(p => p.Id),
+                ProductSortBy.Expiration => query
+                    .OrderBy(p => p.Shipments.Any() ? 0 : 1)
+                    .ThenBy(p => p.Shipments.Any() ? p.Shipments.Min(s => s.ExpirationDate) : DateTime.MaxValue)
+                    .ThenBy(p => p.Id),
+                ProductSortBy.RecentlyUpdated => query
+                    .OrderByDescending(p => p.Shipments.Any() ? p.Shipments.Max(s => (DateTime?)s.CreatedAt) : null)
+                    .ThenBy(p => p.Id),
+                _ => query
+                    .OrderBy(p => p.CategoryId)
+                    .ThenBy(p => p.Name)
+                    .ThenBy(p => p.Id)
+            };
+
             var items = await query
-                .OrderBy(p => p.CategoryId)
-                .ThenBy(p => p.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

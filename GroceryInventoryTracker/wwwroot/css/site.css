@@ -251,6 +251,11 @@ body {
   margin-top: auto;
 }
 
+.product-meta {
+  margin-top: 0.75rem;
+  line-height: 1.4;
+}
+
 .quantity-badge {
   display: inline-block;
   padding: 0.5rem 0.75rem;
@@ -324,12 +329,24 @@ body {
 }
 
 /* Search area enhancements */
-.search-area form {
-  max-width: 600px;
+.search-area .filter-form {
+  max-width: 900px;
   margin: 0 auto;
 }
 
-.search-area .input-group {
+.search-area .filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.search-area .filter-row .form-select {
+  flex: 1 1 180px;
+  min-width: 140px;
+}
+
+.search-area .search-input-group {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border-radius: 4px;
   overflow: hidden;
@@ -358,13 +375,6 @@ body {
   border-radius: 8px;
   object-fit: cover;
   display: block;
-}
-
-.search-area .category-filter {
-  flex: 0 0 auto;
-  width: auto;
-  max-width: 160px;
-  border: 1px solid #dee2e6;
 }
 
 .search-area .form-control:focus {

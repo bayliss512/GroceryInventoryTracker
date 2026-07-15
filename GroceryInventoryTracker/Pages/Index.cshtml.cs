@@ -12,22 +12,35 @@ namespace GroceryInventoryTracker.Pages
     public class IndexModel : PageModel
     {
         private readonly ProductService _service;
+        private readonly SupplierService _suppliers;
 
-        public IndexModel(ProductService service)
+        public IndexModel(ProductService service, SupplierService suppliers)
         {
             _service = service;
+            _suppliers = suppliers;
         }
 
         public List<Product> Products { get; set; } = new();
 
-            // Search and pagination
+            // Search, filters, sorting, and pagination
             [FromQuery]
             public string? Search { get; set; }
 
             [FromQuery]
             public int? CategoryId { get; set; }
 
+            [FromQuery]
+            public int? SupplierId { get; set; }
+
+            [FromQuery]
+            public string? ExpirationFilter { get; set; }
+
+            [FromQuery]
+            public string? SortBy { get; set; }
+
             public List<Category> Categories { get; set; } = new();
+
+            public List<Supplier> Suppliers { get; set; } = new();
 
             [FromQuery(Name = "Page")]
             public int CurrentPage { get; set; } = 1;
@@ -46,7 +59,16 @@ namespace GroceryInventoryTracker.Pages
                 {
                     var pageToUse = CurrentPage < 1 ? 1 : CurrentPage;
                     Categories = await _service.GetCategoriesAsync();
-                    var result = await _service.GetProductsAsync(Search, CategoryId, pageToUse, PageSize);
+                    Suppliers = await _suppliers.GetAllAsync();
+
+                    var expirationFilter = Enum.TryParse<Services.ExpirationFilter>(ExpirationFilter, out var parsedExpiration)
+                        ? parsedExpiration
+                        : Services.ExpirationFilter.All;
+                    var sortBy = Enum.TryParse<ProductSortBy>(SortBy, out var parsedSort)
+                        ? parsedSort
+                        : ProductSortBy.Name;
+
+                    var result = await _service.GetProductsAsync(Search, CategoryId, pageToUse, PageSize, SupplierId, expirationFilter, sortBy);
                     Products = result.Items;
 
                     foreach (var product in Products)
@@ -81,6 +103,28 @@ namespace GroceryInventoryTracker.Pages
                     TotalCount = 0;
                 }
             }
+
+        /// <summary>
+        /// Builds a pagination link for the given page number that preserves every active
+        /// filter/sort so paging never silently drops them.
+        /// </summary>
+        public string PageUrl(int page)
+        {
+            var query = new List<string> { $"Page={page}" };
+
+            if (!string.IsNullOrEmpty(Search))
+                query.Add($"Search={System.Net.WebUtility.UrlEncode(Search)}");
+            if (CategoryId.HasValue)
+                query.Add($"CategoryId={CategoryId.Value}");
+            if (SupplierId.HasValue)
+                query.Add($"SupplierId={SupplierId.Value}");
+            if (!string.IsNullOrEmpty(ExpirationFilter))
+                query.Add($"ExpirationFilter={ExpirationFilter}");
+            if (!string.IsNullOrEmpty(SortBy))
+                query.Add($"SortBy={SortBy}");
+
+            return "?" + string.Join("&", query);
+        }
 
         public async Task<IActionResult> OnGetShipmentsAsync(int productId)
         {

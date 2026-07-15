@@ -19,16 +19,36 @@
     }
 
     <section class="search-area mb-3">
-        <form method="get" style="width: 600px;">
-            <div class="input-group" style="width: 600px;">
-                <select name="CategoryId" class="form-select category-filter" aria-label="Category" onchange="this.form.submit()">
-                    <option value="">All</option>
+        <form method="get" class="filter-form">
+            <div class="filter-row">
+                <select name="CategoryId" class="form-select" aria-label="Category" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
                     @foreach (var c in Model.Categories)
                     {
                         <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
                     }
                 </select>
-                <input name="Search" value="@Model.Search" type="text" class="form-control" placeholder="Search products or categories..." aria-label="Search" />
+                <select name="SupplierId" class="form-select" aria-label="Supplier" onchange="this.form.submit()">
+                    <option value="">All Suppliers</option>
+                    @foreach (var s in Model.Suppliers)
+                    {
+                        <option value="@s.Id" selected="@(Model.SupplierId == s.Id)">@s.Name</option>
+                    }
+                </select>
+                <select name="ExpirationFilter" class="form-select" aria-label="Expiration" onchange="this.form.submit()">
+                    <option value="" selected="@(string.IsNullOrEmpty(Model.ExpirationFilter))">All Expirations</option>
+                    <option value="ExpiringSoon" selected="@(Model.ExpirationFilter == "ExpiringSoon")">Expiring Soon (7 days)</option>
+                    <option value="Expired" selected="@(Model.ExpirationFilter == "Expired")">Expired</option>
+                </select>
+                <select name="SortBy" class="form-select" aria-label="Sort by" onchange="this.form.submit()">
+                    <option value="" selected="@(string.IsNullOrEmpty(Model.SortBy) || Model.SortBy == "Name")">Sort: Name</option>
+                    <option value="Quantity" selected="@(Model.SortBy == "Quantity")">Sort: Quantity</option>
+                    <option value="Expiration" selected="@(Model.SortBy == "Expiration")">Sort: Expiration</option>
+                    <option value="RecentlyUpdated" selected="@(Model.SortBy == "RecentlyUpdated")">Sort: Recently Updated</option>
+                </select>
+            </div>
+            <div class="input-group search-input-group">
+                <input id="searchInput" name="Search" value="@Model.Search" type="text" class="form-control" placeholder="Search products or categories..." aria-label="Search" />
                 <button class="btn btn-primary" type="submit">Search</button>
             </div>
         </form>
@@ -48,17 +68,21 @@
         @if (Model.Products?.Any() != true)
         {
             <div class="empty-state">
-                @if (string.IsNullOrEmpty(Model.Search))
+                @{
+                    var hasActiveFilters = !string.IsNullOrEmpty(Model.Search) || Model.CategoryId.HasValue
+                        || Model.SupplierId.HasValue || !string.IsNullOrEmpty(Model.ExpirationFilter);
+                }
+                @if (!hasActiveFilters)
                 {
                     <p class="text-muted">No products available. Use the Configuration page to initialize the database with sample data.</p>
                 }
                 else
                 {
-                    <p class="text-muted">No products found matching your search. Try a different search term.</p>
+                    <p class="text-muted">No products found matching your filters. Try adjusting your search or filters.</p>
                 }
             </div>
         }
-        else
+        else if (string.IsNullOrEmpty(Model.SortBy) || Model.SortBy == "Name")
         {
             @foreach (var group in Model.Products.GroupBy(p => p.Category?.Name ?? "Uncategorized"))
             {
@@ -67,27 +91,21 @@
                     <div class="product-grid">
                         @foreach (var p in group)
                         {
-                            <div class="product-card" data-product-id="@p.Id" data-product-name="@p.Name" style="cursor:pointer;">
-                                <div class="product-image-container">
-                                    <img src="@p.ImagePath" alt="@p.Name" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23e9ecef%22 width=%22400%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2220%22 fill=%22%236c757d%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage unavailable%3C/text%3E%3C/svg%3E'" />
-                                </div>
-                                <div class="product-body">
-                                    <h4 class="product-name">@p.Name</h4>
-                                    <p class="product-category">@group.Key</p>
-                                    <div class="product-quantities">
-                                        <span class="quantity-badge stored">
-                                            <strong>In Storage:</strong> @p.QuantityStored
-                                        </span>
-                                        <span class="quantity-badge shelves">
-                                            <strong>On Sales Floor:</strong> @p.QuantityOnSalesFloor
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            @await Html.PartialAsync("_ProductCard", p)
                         }
                     </div>
                 </div>
             }
+        }
+        else
+        {
+            <!-- Flat ranked list: category grouping would fragment the visible order for these sorts -->
+            <div class="product-grid">
+                @foreach (var p in Model.Products)
+                {
+                    @await Html.PartialAsync("_ProductCard", p)
+                }
+            </div>
         }
 
         <!-- Pagination -->
@@ -96,16 +114,16 @@
             <nav aria-label="Page navigation" class="pagination-nav">
                 <ul class="pagination">
                     <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="?Search=@Model.Search&CategoryId=@Model.CategoryId&Page=@(Model.CurrentPage - 1)">Previous</a>
+                        <a class="page-link" href="@Model.PageUrl(Model.CurrentPage - 1)">Previous</a>
                     </li>
                     @for (int i = 1; i <= Model.TotalPages; i++)
                     {
                         <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                            <a class="page-link" href="?Search=@Model.Search&CategoryId=@Model.CategoryId&Page=@i">@i</a>
+                            <a class="page-link" href="@Model.PageUrl(i)">@i</a>
                         </li>
                     }
                     <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
-                        <a class="page-link" href="?Search=@Model.Search&CategoryId=@Model.CategoryId&Page=@(Model.CurrentPage + 1)">Next</a>
+                        <a class="page-link" href="@Model.PageUrl(Model.CurrentPage + 1)">Next</a>
                     </li>
                 </ul>
             </nav>

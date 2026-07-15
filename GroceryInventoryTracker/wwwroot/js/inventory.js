@@ -4,6 +4,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalBody = document.getElementById('productModalBody');
     const modalClose = document.getElementById('productModalClose');
 
+    // Debounced auto-submit for the free-text search box, so results update shortly after
+    // typing stops without requiring a click on the Search button (button still works too).
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        let debounceTimer;
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                searchInput.form.submit();
+            }, 400);
+        });
+    }
+
     function openModal() {
         if (!modal) return;
         modal.classList.add('open');

@@ -1,0 +1,42 @@
+@model GroceryInventoryTracker.Models.Product
+@{
+    var nearestExpiration = Model.Shipments.Any() ? Model.Shipments.Min(s => s.ExpirationDate) : (DateTime?)null;
+    var lastReceived = Model.Shipments.Any() ? Model.Shipments.Max(s => s.CreatedAt) : (DateTime?)null;
+    var isExpired = nearestExpiration.HasValue && nearestExpiration.Value.Date < DateTime.Today;
+}
+<div class="product-card" data-product-id="@Model.Id" data-product-name="@Model.Name" style="cursor:pointer;">
+    <div class="product-image-container">
+        <img src="@Model.ImagePath" alt="@Model.Name" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23e9ecef%22 width=%22400%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2220%22 fill=%22%236c757d%22 text-anchor=%22middle%22 dy=%22.3em%22%3EImage unavailable%3C/text%3E%3C/svg%3E'" />
+    </div>
+    <div class="product-body">
+        <h4 class="product-name">@Model.Name</h4>
+        <p class="product-category">@(Model.Category?.Name ?? "Uncategorized")</p>
+        <div class="product-quantities">
+            <span class="quantity-badge stored">
+                <strong>In Storage:</strong> @Model.QuantityStored
+            </span>
+            <span class="quantity-badge shelves">
+                <strong>On Sales Floor:</strong> @Model.QuantityOnSalesFloor
+            </span>
+        </div>
+        <p class="product-meta text-muted small mb-0">
+            @if (isExpired)
+            {
+                <span class="text-danger">Expired: @nearestExpiration!.Value.ToString("MMM dd, yyyy")</span>
+            }
+            else if (nearestExpiration.HasValue)
+            {
+                <span>Nearest expiration: @nearestExpiration.Value.ToString("MMM dd, yyyy")</span>
+            }
+            else
+            {
+                <span>No shipments on record</span>
+            }
+            @if (lastReceived.HasValue)
+            {
+                <br />
+                <span>Last received: @lastReceived.Value.ToString("MMM dd, yyyy")</span>
+            }
+        </p>
+    </div>
+</div>
