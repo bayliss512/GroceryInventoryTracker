@@ -110,11 +110,11 @@ namespace GroceryInventoryTracker.Services
 
             if (expirationFilter == ExpirationFilter.ExpiringSoon)
             {
-                query = query.Where(p => p.Shipments.Any(s => s.ExpirationDate >= today && s.ExpirationDate <= expiringSoonEnd));
+                query = query.Where(p => p.Shipments.Any(s => s.ExpirationDate.HasValue && s.ExpirationDate >= today && s.ExpirationDate <= expiringSoonEnd));
             }
             else if (expirationFilter == ExpirationFilter.Expired)
             {
-                query = query.Where(p => p.Shipments.Any(s => s.ExpirationDate < today));
+                query = query.Where(p => p.Shipments.Any(s => s.ExpirationDate.HasValue && s.ExpirationDate < today));
             }
 
             var total = await query.CountAsync();
@@ -125,8 +125,8 @@ namespace GroceryInventoryTracker.Services
                     .OrderByDescending(p => p.Shipments.Sum(s => (int?)s.Quantity) ?? 0)
                     .ThenBy(p => p.Id),
                 ProductSortBy.Expiration => query
-                    .OrderBy(p => p.Shipments.Any() ? 0 : 1)
-                    .ThenBy(p => p.Shipments.Any() ? p.Shipments.Min(s => s.ExpirationDate) : DateTime.MaxValue)
+                    .OrderBy(p => p.Shipments.Any(s => s.ExpirationDate.HasValue) ? 0 : 1)
+                    .ThenBy(p => p.Shipments.Any(s => s.ExpirationDate.HasValue) ? p.Shipments.Min(s => s.ExpirationDate) : DateTime.MaxValue)
                     .ThenBy(p => p.Id),
                 ProductSortBy.RecentlyUpdated => query
                     .OrderByDescending(p => p.Shipments.Any() ? p.Shipments.Max(s => (DateTime?)s.CreatedAt) : null)
@@ -181,6 +181,7 @@ namespace GroceryInventoryTracker.Services
             product.Name = updated.Name;
             product.CategoryId = updated.CategoryId;
             product.ImagePath = updated.ImagePath;
+            product.IsPerishable = updated.IsPerishable;
 
             await _db.SaveChangesAsync();
             return true;

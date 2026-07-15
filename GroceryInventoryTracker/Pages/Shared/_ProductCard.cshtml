@@ -28,6 +28,10 @@
             {
                 <span>Nearest expiration: @nearestExpiration.Value.ToString("MMM dd, yyyy")</span>
             }
+            else if (!Model.IsPerishable)
+            {
+                <span>Non-perishable</span>
+            }
             else
             {
                 <span>No shipments on record</span>

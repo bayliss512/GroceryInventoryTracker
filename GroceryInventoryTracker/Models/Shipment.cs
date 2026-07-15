@@ -14,8 +14,7 @@ namespace GroceryInventoryTracker.Models
         [Required]
         public string ShipmentNumber { get; set; } = default!;
 
-        [Required]
-        public DateTime ExpirationDate { get; set; }
+        public DateTime? ExpirationDate { get; set; }
 
         public int Quantity { get; set; }
 

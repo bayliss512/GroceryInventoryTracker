@@ -76,7 +76,7 @@
                                     <td>@shipment.ShipmentNumber</td>
                                     <td>@(shipment.Product?.Name ?? "—")</td>
                                     <td>@(shipment.Supplier?.Name ?? "—")</td>
-                                    <td>@shipment.ExpirationDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@(shipment.ExpirationDate.HasValue ? shipment.ExpirationDate.Value.ToString("yyyy-MM-dd") : "—")</td>
                                     <td>@shipment.Quantity</td>
                                     <td>
                                         @if (shipment.Location == "OnFloor")

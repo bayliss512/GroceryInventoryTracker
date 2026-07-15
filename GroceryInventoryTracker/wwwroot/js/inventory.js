@@ -77,21 +77,25 @@ document.addEventListener('DOMContentLoaded', function () {
                     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
                     const rows = data.map(function(s) {
-                        const expDate = new Date(s.expirationDate);
-                        const exp = expDate.toLocaleDateString();
-
-                        // Compare whole days between the expiration date and the start of today
-                        const expDay = new Date(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
-                        const daysUntilExpiry = Math.round((expDay - startOfToday) / 86400000);
-
+                        var exp = '—';
                         var expirationBadge = '';
-                        if (daysUntilExpiry < 0) {
-                            expirationBadge = ' <span class="badge bg-danger">Expired</span>';
-                        } else if (daysUntilExpiry <= EXPIRING_SOON_DAYS) {
-                            const label = daysUntilExpiry === 0
-                                ? 'Expires today'
-                                : 'Expires in ' + daysUntilExpiry + ' day' + (daysUntilExpiry === 1 ? '' : 's');
-                            expirationBadge = ' <span class="badge bg-warning text-dark">' + label + '</span>';
+
+                        if (s.expirationDate) {
+                            const expDate = new Date(s.expirationDate);
+                            exp = expDate.toLocaleDateString();
+
+                            // Compare whole days between the expiration date and the start of today
+                            const expDay = new Date(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
+                            const daysUntilExpiry = Math.round((expDay - startOfToday) / 86400000);
+
+                            if (daysUntilExpiry < 0) {
+                                expirationBadge = ' <span class="badge bg-danger">Expired</span>';
+                            } else if (daysUntilExpiry <= EXPIRING_SOON_DAYS) {
+                                const label = daysUntilExpiry === 0
+                                    ? 'Expires today'
+                                    : 'Expires in ' + daysUntilExpiry + ' day' + (daysUntilExpiry === 1 ? '' : 's');
+                                expirationBadge = ' <span class="badge bg-warning text-dark">' + label + '</span>';
+                            }
                         }
 
                         const locationBadge = s.location === 'OnFloor'

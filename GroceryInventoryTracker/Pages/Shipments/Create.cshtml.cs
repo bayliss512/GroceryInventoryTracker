@@ -25,7 +25,7 @@ namespace GroceryInventoryTracker.Pages.Shipments
         [BindProperty]
         public InputModel Input { get; set; } = new();
 
-        public List<SelectListItem> ProductOptions { get; set; } = new();
+        public List<Product> ProductOptions { get; set; } = new();
         public List<SelectListItem> SupplierOptions { get; set; } = new();
 
         public class InputModel
@@ -39,9 +39,8 @@ namespace GroceryInventoryTracker.Pages.Shipments
             [StringLength(50, ErrorMessage = "Shipment number must be 50 characters or fewer.")]
             public string ShipmentNumber { get; set; } = default!;
 
-            [Required(ErrorMessage = "Expiration date is required.")]
             [DataType(DataType.Date)]
-            public DateTime ExpirationDate { get; set; } = DateTime.Today.AddDays(30);
+            public DateTime? ExpirationDate { get; set; } = DateTime.Today.AddDays(30);
 
             [Required]
             [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
@@ -64,12 +63,27 @@ namespace GroceryInventoryTracker.Pages.Shipments
                 return Page();
             }
 
+            var selectedProduct = await _products.GetProductByIdAsync(Input.ProductId);
+            if (selectedProduct == null)
+            {
+                ModelState.AddModelError(nameof(Input.ProductId), "Selected product could not be found.");
+                await LoadOptionsAsync();
+                return Page();
+            }
+
+            if (selectedProduct.IsPerishable && !Input.ExpirationDate.HasValue)
+            {
+                ModelState.AddModelError(nameof(Input.ExpirationDate), "Expiration date is required for perishable products.");
+                await LoadOptionsAsync();
+                return Page();
+            }
+
             await _shipments.CreateAsync(new Shipment
             {
                 ProductId = Input.ProductId,
                 SupplierId = Input.SupplierId,
                 ShipmentNumber = Input.ShipmentNumber.Trim(),
-                ExpirationDate = Input.ExpirationDate,
+                ExpirationDate = selectedProduct.IsPerishable ? Input.ExpirationDate : null,
                 Quantity = Input.Quantity,
                 Location = Input.Location
             });
@@ -80,10 +94,7 @@ namespace GroceryInventoryTracker.Pages.Shipments
 
         private async Task LoadOptionsAsync()
         {
-            var products = await _products.GetAllProductsAsync();
-            ProductOptions = products
-                .Select(p => new SelectListItem { Value = p.Id.ToString(), Text = p.Name })
-                .ToList();
+            ProductOptions = await _products.GetAllProductsAsync();
 
             var suppliers = await _suppliers.GetAllAsync();
             SupplierOptions = suppliers

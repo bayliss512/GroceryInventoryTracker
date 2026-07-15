@@ -26,6 +26,8 @@ namespace GroceryInventoryTracker.Models
 
         public string? ImagePath { get; set; }
 
+        public bool IsPerishable { get; set; } = true;
+
         public ICollection<Shipment> Shipments { get; set; } = new List<Shipment>();
     }
 }

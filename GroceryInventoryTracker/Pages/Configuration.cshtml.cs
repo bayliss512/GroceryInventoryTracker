@@ -138,8 +138,11 @@ namespace GroceryInventoryTracker.Pages
                 // Generate a random quantity divisible by 2 or 5, up to 50
                 var quantity = GenerateRandomQuantity(random);
 
-                // Generate a random future expiration date (1 to 365 days from now)
-                var expirationDate = DateTime.Now.AddDays(random.Next(1, 366));
+                // Generate a random future expiration date (1 to 365 days from now), unless the
+                // product is non-perishable, in which case it doesn't get one.
+                DateTime? expirationDate = randomProduct.IsPerishable
+                    ? DateTime.Now.AddDays(random.Next(1, 366))
+                    : null;
 
                 // Create a unique shipment number
                 var shipmentNumber = $"SHP-{DateTime.Now:yyyyMMddHHmmss}-{random.Next(1000, 9999)}";
@@ -152,7 +155,8 @@ namespace GroceryInventoryTracker.Pages
                     Quantity = quantity
                 });
 
-                SuccessMessage = $"Random shipment created! Product: {randomProduct.Name}, Quantity: {quantity}, Expires: {expirationDate:MMM dd, yyyy}";
+                var expiresText = expirationDate.HasValue ? $"Expires: {expirationDate:MMM dd, yyyy}" : "Non-perishable";
+                SuccessMessage = $"Random shipment created! Product: {randomProduct.Name}, Quantity: {quantity}, {expiresText}";
                 _logger.LogInformation($"Random shipment generated for product {randomProduct.Name} with quantity {quantity}");
             }
             catch (Exception ex)
@@ -203,8 +207,11 @@ namespace GroceryInventoryTracker.Pages
                     ? Input.Quantity.Value
                     : GenerateRandomQuantity(random);
 
-                // Resolve expiration date: use the provided value, or generate a random future date if left blank
-                var expirationDate = Input.ExpirationDate ?? DateTime.Now.AddDays(random.Next(1, 366));
+                // Resolve expiration date: use the provided value, or generate a random future date if left
+                // blank — unless the product is non-perishable, in which case it never gets one.
+                DateTime? expirationDate = product.IsPerishable
+                    ? Input.ExpirationDate ?? DateTime.Now.AddDays(random.Next(1, 366))
+                    : null;
 
                 // Resolve shipment number: use the provided value, or generate a unique one if left blank
                 var shipmentNumber = string.IsNullOrWhiteSpace(Input.ShipmentNumber)
@@ -219,7 +226,8 @@ namespace GroceryInventoryTracker.Pages
                     Quantity = quantity
                 });
 
-                SuccessMessage = $"Shipment created! Product: {product.Name}, Quantity: {quantity}, Expires: {expirationDate:MMM dd, yyyy}, Shipment #: {shipmentNumber}";
+                var expiresText = expirationDate.HasValue ? $"Expires: {expirationDate:MMM dd, yyyy}" : "Non-perishable";
+                SuccessMessage = $"Shipment created! Product: {product.Name}, Quantity: {quantity}, {expiresText}, Shipment #: {shipmentNumber}";
                 _logger.LogInformation($"Configurable shipment generated for product {product.Name} with quantity {quantity}");
             }
             catch (Exception ex)

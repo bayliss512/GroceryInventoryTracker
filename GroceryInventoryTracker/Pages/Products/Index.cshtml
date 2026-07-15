@@ -49,6 +49,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Category</th>
+                                <th>Perishable</th>
                                 <th>In Storage</th>
                                 <th>On Sales Floor</th>
                                 @if (User.Identity?.IsAuthenticated == true)
@@ -63,6 +64,16 @@
                                 <tr>
                                     <td>@product.Name</td>
                                     <td>@(product.Category?.Name ?? "Uncategorized")</td>
+                                    <td>
+                                        @if (product.IsPerishable)
+                                        {
+                                            <span class="badge bg-light text-dark border">Yes</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">No</span>
+                                        }
+                                    </td>
                                     <td>@product.QuantityStored</td>
                                     <td>@product.QuantityOnSalesFloor</td>
                                     @if (User.Identity?.IsAuthenticated == true)

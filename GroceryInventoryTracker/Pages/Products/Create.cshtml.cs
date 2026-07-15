@@ -34,6 +34,8 @@ namespace GroceryInventoryTracker.Pages.Products
 
             [StringLength(300)]
             public string? ImagePath { get; set; }
+
+            public bool IsPerishable { get; set; } = true;
         }
 
         public async Task OnGetAsync()
@@ -53,7 +55,8 @@ namespace GroceryInventoryTracker.Pages.Products
             {
                 Name = Input.Name.Trim(),
                 CategoryId = Input.CategoryId,
-                ImagePath = string.IsNullOrWhiteSpace(Input.ImagePath) ? null : Input.ImagePath.Trim()
+                ImagePath = string.IsNullOrWhiteSpace(Input.ImagePath) ? null : Input.ImagePath.Trim(),
+                IsPerishable = Input.IsPerishable
             });
 
             TempData["SuccessMessage"] = "Product created.";

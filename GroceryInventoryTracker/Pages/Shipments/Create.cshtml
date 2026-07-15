@@ -16,8 +16,12 @@
 
                 <div class="mb-3">
                     <label asp-for="Input.ProductId" class="form-label">Product</label>
-                    <select asp-for="Input.ProductId" asp-items="Model.ProductOptions" class="form-select">
+                    <select asp-for="Input.ProductId" id="productSelect" class="form-select">
                         <option value="">-- Select a product --</option>
+                        @foreach (var p in Model.ProductOptions)
+                        {
+                            <option value="@p.Id" data-perishable="@p.IsPerishable.ToString().ToLower()" selected="@(Model.Input.ProductId == p.Id)">@p.Name</option>
+                        }
                     </select>
                     <span asp-validation-for="Input.ProductId" class="text-danger"></span>
                 </div>
@@ -37,10 +41,13 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Input.ExpirationDate" class="form-label">Expiration Date</label>
-                        <input asp-for="Input.ExpirationDate" class="form-control" />
-                        <span asp-validation-for="Input.ExpirationDate" class="text-danger"></span>
+                    <div class="col-md-6 mb-3" id="expirationDateGroup">
+                        <div id="expirationDateFields">
+                            <label asp-for="Input.ExpirationDate" class="form-label">Expiration Date</label>
+                            <input asp-for="Input.ExpirationDate" id="expirationDateInput" class="form-control" />
+                            <span asp-validation-for="Input.ExpirationDate" class="text-danger"></span>
+                        </div>
+                        <p class="form-text mb-0" id="nonPerishableNote" style="display:none;">This product is marked non-perishable, so no expiration date is needed.</p>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label asp-for="Input.Quantity" class="form-label">Quantity</label>
@@ -69,4 +76,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/shipmentForm.js" asp-append-version="true"></script>
 }

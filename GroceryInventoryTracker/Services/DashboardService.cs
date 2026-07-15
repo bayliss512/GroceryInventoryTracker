@@ -102,7 +102,7 @@ namespace GroceryInventoryTracker.Services
 
             var expiringSoonQuery = _db.Shipments
                 .Include(s => s.Product)
-                .Where(s => s.ExpirationDate >= today && s.ExpirationDate <= expiringWindowEnd)
+                .Where(s => s.ExpirationDate.HasValue && s.ExpirationDate >= today && s.ExpirationDate <= expiringWindowEnd)
                 .OrderBy(s => s.ExpirationDate);
 
             summary.ExpiringSoonCount = await expiringSoonQuery.CountAsync();
@@ -112,7 +112,7 @@ namespace GroceryInventoryTracker.Services
                 {
                     ProductName = s.Product!.Name,
                     ShipmentNumber = s.ShipmentNumber,
-                    ExpirationDate = s.ExpirationDate,
+                    ExpirationDate = s.ExpirationDate!.Value,
                     Quantity = s.Quantity
                 })
                 .ToListAsync();
