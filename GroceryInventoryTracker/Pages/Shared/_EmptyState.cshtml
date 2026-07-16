@@ -1,0 +1,10 @@
+@model GroceryInventoryTracker.ViewModels.EmptyStateViewModel
+
+<div class="empty-state">
+    <svg class="icon empty-state-icon"><use href="@("#" + Model.Icon)"></use></svg>
+    <p class="text-muted mb-0">@Model.Message</p>
+    @if (!string.IsNullOrEmpty(Model.CtaText) && !string.IsNullOrEmpty(Model.CtaHref))
+    {
+        <a href="@Model.CtaHref" class="btn btn-primary btn-sm mt-3">@Model.CtaText</a>
+    }
+</div>

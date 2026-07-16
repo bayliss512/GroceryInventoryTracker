@@ -1,0 +1,26 @@
+.configuration-page {
+    padding: 20px 0;
+}
+
+.database-management .card {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.database-management .card-body {
+    padding: 20px;
+}
+
+.database-management .btn {
+    width: 100%;
+}
+
+.database-management .card-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.database-management .card-text {
+    font-size: 0.875rem;
+    margin-bottom: 15px;
+}

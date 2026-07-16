@@ -5,7 +5,7 @@
 }
 
 <div class="audit-page">
-    <header class="mb-4">
+    <header class="page-header mb-4">
         <h1>Audit History</h1>
         <p class="lead mb-0">A record of inventory and user-management changes made in the system.</p>
     </header>
@@ -17,7 +17,11 @@
         <div class="card-body">
             @if (Model.Entries.Count == 0)
             {
-                <p class="text-muted mb-0">No activity has been recorded yet.</p>
+                @await Html.PartialAsync("_EmptyState", new GroceryInventoryTracker.ViewModels.EmptyStateViewModel
+                {
+                    Icon = "icon-history",
+                    Message = "No activity has been recorded yet."
+                })
             }
             else
             {

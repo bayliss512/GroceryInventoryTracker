@@ -5,7 +5,7 @@
 }
 
 <div class="configuration-page">
-	<header class="mb-4">
+	<header class="page-header mb-4">
 		<h1>Configuration</h1>
 		<p class="lead">Database Management</p>
 	</header>
@@ -42,7 +42,7 @@
 									<h6 class="card-title">Initialize Database</h6>
 									<p class="card-text text-muted small">Create database tables and populate with seed data.</p>
 									<button type="submit" class="btn btn-success">
-										<i class="bi bi-database-plus"></i> Initialize Database
+										<svg class="icon"><use href="#icon-plus"></use></svg> Initialize Database
 									</button>
 								</div>
 							</div>
@@ -50,13 +50,13 @@
 					</div>
 
 					<div class="col-md-6">
-						<form method="post" asp-page-handler="DeleteDatabase" onsubmit="return confirm('Are you sure you want to delete the database? This action cannot be undone.');">
+						<form method="post" asp-page-handler="DeleteDatabase" data-confirm="Are you sure you want to delete the database? This action cannot be undone.">
 							<div class="card border-danger">
 								<div class="card-body">
 									<h6 class="card-title text-danger">Delete Database</h6>
 									<p class="card-text text-muted small">Permanently delete all database tables and data.</p>
 									<button type="submit" class="btn btn-danger">
-										<i class="bi bi-trash3"></i> Delete Database
+										<svg class="icon"><use href="#icon-trash"></use></svg> Delete Database
 									</button>
 								</div>
 							</div>
@@ -70,7 +70,7 @@
 									<h6 class="card-title text-info">Generate Random Shipment</h6>
 									<p class="card-text text-muted small">Create a random shipment with a random product and quantity.</p>
 									<button type="submit" class="btn btn-info">
-										<i class="bi bi-plus-circle"></i> Generate Shipment
+										<svg class="icon"><use href="#icon-truck"></use></svg> Generate Shipment
 									</button>
 								</div>
 							</div>
@@ -83,7 +83,7 @@
 								<h6 class="card-title text-primary">Generate Configurable Shipment</h6>
 								<p class="card-text text-muted small">Create a shipment with user provided qualities.</p>
 								<button type="button" class="btn btn-primary">
-									<i class="bi bi-plus-circle"></i> Generate Shipment
+									<svg class="icon"><use href="#icon-truck"></use></svg> Generate Shipment
 								</button>
 							</div>
 						</div>
@@ -185,7 +185,7 @@
 							<input asp-for="Input.ShipmentNumber" type="text" class="form-control" placeholder="Leave blank to auto-generate" />
 						</div>
 						<button type="submit" class="btn btn-primary">
-							<i class="bi bi-plus-circle"></i> Create Shipment
+							<svg class="icon"><use href="#icon-truck"></use></svg> Create Shipment
 						</button>
 					</form>
 				</div>
@@ -195,32 +195,3 @@
 </div>
 
 <script src="~/js/addShipment.js"></script>
-
-<style>
-	.configuration-page {
-		padding: 20px 0;
-	}
-
-	.database-management .card {
-		border-radius: 8px;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	.database-management .card-body {
-		padding: 20px;
-	}
-
-	.database-management .btn {
-		width: 100%;
-	}
-
-	.database-management .card-title {
-		font-weight: 600;
-		margin-bottom: 10px;
-	}
-
-	.database-management .card-text {
-		font-size: 0.875rem;
-		margin-bottom: 15px;
-	}
-</style>

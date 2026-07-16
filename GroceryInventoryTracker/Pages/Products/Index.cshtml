@@ -5,14 +5,14 @@
 }
 
 <div class="products-manage-page">
-    <header class="mb-4 d-flex justify-content-between align-items-center">
+    <header class="page-header mb-4 d-flex justify-content-between align-items-center">
         <div>
             <h1>Manage Products</h1>
             <p class="lead mb-0">Add, edit, and remove products in the catalog.</p>
         </div>
         @if (User.IsInRole("Administrator"))
         {
-            <a asp-page="Create" class="btn btn-primary">New Product</a>
+            <a asp-page="Create" class="btn btn-primary"><svg class="icon"><use href="#icon-plus"></use></svg>New Product</a>
         }
     </header>
 
@@ -39,7 +39,13 @@
         <div class="card-body">
             @if (Model.Products.Count == 0)
             {
-                <p class="text-muted mb-0">No products yet.</p>
+                @await Html.PartialAsync("_EmptyState", new GroceryInventoryTracker.ViewModels.EmptyStateViewModel
+                {
+                    Icon = "icon-box",
+                    Message = "No products yet.",
+                    CtaText = User.IsInRole("Administrator") ? "New Product" : null,
+                    CtaHref = User.IsInRole("Administrator") ? Url.Page("Create") : null
+                })
             }
             else
             {
@@ -80,10 +86,10 @@
                                     {
                                         <td class="text-end">
                                             <div class="d-inline-flex gap-2">
-                                                <a asp-page="Edit" asp-route-id="@product.Id" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                                <a asp-page="Edit" asp-route-id="@product.Id" class="btn btn-outline-secondary btn-sm"><svg class="icon"><use href="#icon-edit"></use></svg>Edit</a>
                                                 <form method="post" asp-page-handler="Delete" asp-route-id="@product.Id"
-                                                      onsubmit="return confirm('Delete product &quot;@product.Name&quot;? This cannot be undone.');">
-                                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                                      data-confirm="Delete product &quot;@product.Name&quot;? This cannot be undone.">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm"><svg class="icon"><use href="#icon-trash"></use></svg>Delete</button>
                                                 </form>
                                             </div>
                                         </td>

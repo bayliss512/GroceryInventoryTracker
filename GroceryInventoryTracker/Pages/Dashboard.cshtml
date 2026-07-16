@@ -5,7 +5,7 @@
 }
 
 <div class="dashboard-page">
-    <header class="mb-4">
+    <header class="page-header mb-4">
         <h1>Dashboard</h1>
         <p class="lead mb-0">Operational overview of the store's inventory.</p>
     </header>
@@ -14,6 +14,7 @@
         <div class="col-6 col-md-3">
             <div class="card stat-tile">
                 <div class="card-body">
+                    <svg class="icon icon-lg stat-icon"><use href="#icon-box"></use></svg>
                     <div class="stat-number" id="stat-total-products">@Model.Summary.TotalProducts</div>
                     <div class="stat-label">Total Products</div>
                 </div>
@@ -22,6 +23,7 @@
         <div class="col-6 col-md-3">
             <div class="card stat-tile stat-tile-warning">
                 <div class="card-body">
+                    <svg class="icon icon-lg stat-icon"><use href="#icon-warning"></use></svg>
                     <div class="stat-number" id="stat-low-stock-count">@Model.Summary.LowStockCount</div>
                     <div class="stat-label">Low Stock (&lt; @Model.LowStockThreshold)</div>
                     <ul class="stat-list" id="list-low-stock">
@@ -37,6 +39,7 @@
         <div class="col-6 col-md-3">
             <div class="card stat-tile stat-tile-danger">
                 <div class="card-body">
+                    <svg class="icon icon-lg stat-icon"><use href="#icon-inbox"></use></svg>
                     <div class="stat-number" id="stat-out-of-stock-count">@Model.Summary.OutOfStockCount</div>
                     <div class="stat-label">Out of Stock</div>
                     <ul class="stat-list" id="list-out-of-stock">
@@ -52,6 +55,7 @@
         <div class="col-6 col-md-3">
             <div class="card stat-tile stat-tile-info">
                 <div class="card-body">
+                    <svg class="icon icon-lg stat-icon"><use href="#icon-clock"></use></svg>
                     <div class="stat-number" id="stat-expiring-soon-count">@Model.Summary.ExpiringSoonCount</div>
                     <div class="stat-label">Expiring Soon (@Model.ExpiringSoonDays days)</div>
                     <ul class="stat-list" id="list-expiring-soon">

@@ -30,13 +30,31 @@ body {
   text-align: start;
 }
 
-/* Inventory page styles */
-.inventory-page h1 {
+/* Icon sprite utility */
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: none;
+  flex-shrink: 0;
+}
+
+.icon-lg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.btn .icon {
+  margin-right: 0.35rem;
+}
+
+/* Consistent page header typography across all pages */
+.page-header h1 {
   font-size: 1.75rem;
   margin-bottom: 0.25rem;
 }
 
-.inventory-page .lead {
+.page-header .lead {
   margin-top: 0;
   color: #6c757d;
 }
@@ -68,6 +86,10 @@ body {
 .custom-modal-dialog {
   max-width: 680px;
   width: 95%;
+}
+
+.confirm-modal-dialog {
+  max-width: 420px;
 }
 
 .custom-modal-content {
@@ -285,6 +307,14 @@ body {
   margin: 0;
 }
 
+.empty-state-icon {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  color: #ced4da;
+}
+
 /* Pagination styling */
 .pagination-nav {
   display: flex;
@@ -394,6 +424,7 @@ body {
 
 /* Dashboard */
 .stat-tile {
+  position: relative;
   height: 100%;
   border-left: 4px solid #6c757d;
 }
@@ -408,6 +439,25 @@ body {
 
 .stat-tile-info {
   border-left-color: #0d6efd;
+}
+
+.stat-icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: #adb5bd;
+}
+
+.stat-tile-warning .stat-icon {
+  color: #e65100;
+}
+
+.stat-tile-danger .stat-icon {
+  color: #c62828;
+}
+
+.stat-tile-info .stat-icon {
+  color: #0d6efd;
 }
 
 .stat-number {
