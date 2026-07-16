@@ -17,7 +17,6 @@ namespace GroceryInventoryTracker.Pages
 
         public DashboardService.DashboardSummary Summary { get; set; } = new();
 
-        public int LowStockThreshold => DashboardService.LowStockThreshold;
         public int ExpiringSoonDays => DashboardService.ExpiringSoonDays;
 
         public async Task OnGetAsync()

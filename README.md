@@ -143,9 +143,23 @@ records the actor by name so the audit trail survives account deletion.
 
 ## Screenshots
 
-*Coming soon.* Views worth capturing once available: the Dashboard, the product catalog with an active
-search/filter, a product's shipment detail view, the Audit History page, and the Admin user-management
-page.
+**Dashboard** — at-a-glance out-of-stock, low-stock, and expiring-soon counts, plus recent activity.
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+**Catalog search/filter** — searching "Coffee" within the Beverages category, sorted by quantity.
+
+![Catalog search](docs/screenshots/catalog-search.png)
+
+**Shipment detail** — per-shipment expiration status (expired / expiring soon) for a product.
+
+![Product shipment detail](docs/screenshots/product-shipments.png)
+
+**Admin user management** — Administrators can promote/demote and delete accounts.
+
+![Admin user management](docs/screenshots/admin-users.png)
+
+More views worth capturing later: the Audit History page and the Admin user-management page.
 
 ## Getting Started (local development)
 
@@ -270,5 +284,5 @@ GroceryInventoryTracker/
 
 - Auto-deploy the published GHCR image to a live host (e.g. Azure App Service, Fly.io) once a hosting
   target is chosen.
-- Real screenshots of the running app in this README.
+- A screenshot of the Audit History page.
 - A LICENSE file (none is currently included in the repository).

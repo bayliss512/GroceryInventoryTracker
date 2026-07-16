@@ -45,22 +45,24 @@
                         @foreach (var user in Model.Users)
                         {
                             <tr>
-                                <td class="d-flex align-items-center gap-2">
-                                    <span class="admin-avatar">
-                                        @if (!string.IsNullOrEmpty(user.ProfileImagePath))
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="admin-avatar">
+                                            @if (!string.IsNullOrEmpty(user.ProfileImagePath))
+                                            {
+                                                <img src="@user.ProfileImagePath" alt="@user.Username" />
+                                            }
+                                            else
+                                            {
+                                                @Html.Raw(user.IconSvg)
+                                            }
+                                        </span>
+                                        @user.Username
+                                        @if (string.Equals(user.Username, User.Identity!.Name, StringComparison.Ordinal))
                                         {
-                                            <img src="@user.ProfileImagePath" alt="@user.Username" />
+                                            <span class="badge bg-secondary">You</span>
                                         }
-                                        else
-                                        {
-                                            @Html.Raw(user.IconSvg)
-                                        }
-                                    </span>
-                                    @user.Username
-                                    @if (string.Equals(user.Username, User.Identity!.Name, StringComparison.Ordinal))
-                                    {
-                                        <span class="badge bg-secondary">You</span>
-                                    }
+                                    </div>
                                 </td>
                                 <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
                                 <td>

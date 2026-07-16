@@ -41,6 +41,13 @@
                     <div class="form-text">Uncheck for items that don't expire (e.g. cleaning supplies) — shipments for this product won't ask for an expiration date.</div>
                 </div>
 
+                <div class="mb-3">
+                    <label asp-for="Input.LowStockThreshold" class="form-label">Low Stock Threshold</label>
+                    <input asp-for="Input.LowStockThreshold" type="number" min="0" class="form-control" style="max-width: 150px;" />
+                    <span asp-validation-for="Input.LowStockThreshold" class="text-danger"></span>
+                    <div class="form-text">The dashboard flags this product as "low stock" once its total quantity across all shipments drops below this number.</div>
+                </div>
+
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">Create</button>
                     <a asp-page="Index" class="btn btn-outline-secondary">Cancel</a>

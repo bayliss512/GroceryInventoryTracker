@@ -44,15 +44,16 @@ namespace GroceryInventoryTracker.Tests.Services
         {
             var category = AddCategory();
             var other = AddCategory("Bakery");
-            var product = await _products.CreateAsync(new Product { Name = "Apples", CategoryId = category.Id, IsPerishable = true });
+            var product = await _products.CreateAsync(new Product { Name = "Apples", CategoryId = category.Id, IsPerishable = true, LowStockThreshold = 20 });
 
-            var updated = await _products.UpdateAsync(product.Id, new Product { Name = "Bread", CategoryId = other.Id, IsPerishable = false });
+            var updated = await _products.UpdateAsync(product.Id, new Product { Name = "Bread", CategoryId = other.Id, IsPerishable = false, LowStockThreshold = 40 });
 
             Assert.True(updated);
             var reloaded = await _products.GetProductByIdAsync(product.Id);
             Assert.Equal("Bread", reloaded!.Name);
             Assert.Equal(other.Id, reloaded.CategoryId);
             Assert.False(reloaded.IsPerishable);
+            Assert.Equal(40, reloaded.LowStockThreshold);
         }
 
         [Fact]

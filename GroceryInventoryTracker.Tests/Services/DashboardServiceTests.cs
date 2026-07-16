@@ -72,7 +72,7 @@ namespace GroceryInventoryTracker.Tests.Services
         public async Task GetSummaryAsync_ClassifiesBelowThresholdQuantityAsLowStock()
         {
             var product = AddProduct("Apples");
-            AddShipment(product, DashboardService.LowStockThreshold - 1);
+            AddShipment(product, Product.DefaultLowStockThreshold - 1);
 
             var summary = await _dashboard.GetSummaryAsync();
 
@@ -85,12 +85,33 @@ namespace GroceryInventoryTracker.Tests.Services
         public async Task GetSummaryAsync_QuantityExactlyAtTheThresholdIsNotLowStock()
         {
             var product = AddProduct("Apples");
-            AddShipment(product, DashboardService.LowStockThreshold);
+            AddShipment(product, Product.DefaultLowStockThreshold);
 
             var summary = await _dashboard.GetSummaryAsync();
 
             Assert.Equal(0, summary.LowStockCount);
             Assert.Equal(0, summary.OutOfStockCount);
+        }
+
+        [Fact]
+        public async Task GetSummaryAsync_UsesEachProductsOwnLowStockThreshold()
+        {
+            // Same quantity, different thresholds: one should be low stock and the other shouldn't,
+            // proving the classification isn't driven by a single global cutoff.
+            var lowThresholdProduct = AddProduct("Custom Low Threshold");
+            lowThresholdProduct.LowStockThreshold = 5;
+            _db.Context.SaveChanges();
+            AddShipment(lowThresholdProduct, 10);
+
+            var highThresholdProduct = AddProduct("Custom High Threshold");
+            highThresholdProduct.LowStockThreshold = 50;
+            _db.Context.SaveChanges();
+            AddShipment(highThresholdProduct, 10);
+
+            var summary = await _dashboard.GetSummaryAsync();
+
+            Assert.DoesNotContain(lowThresholdProduct.Name, summary.LowStockProducts);
+            Assert.Contains(highThresholdProduct.Name, summary.LowStockProducts);
         }
 
         [Fact]

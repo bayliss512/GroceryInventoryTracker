@@ -1,10 +1,32 @@
-﻿@page
+@page
 @model PrivacyModel
 @{
     ViewData["Title"] = "Privacy Policy";
 }
-<header class="page-header mb-4">
-    <h1>@ViewData["Title"]</h1>
-</header>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="privacy-page">
+    <header class="page-header mb-4">
+        <h1>@ViewData["Title"]</h1>
+        <p class="lead mb-0">How your account data is stored and who can see it.</p>
+    </header>
+
+    <div class="card" style="max-width: 720px;">
+        <div class="card-body">
+            <h2 class="h5">Passwords</h2>
+            <p>
+                All stored passwords are hashed with PBKDF2-SHA256, salted per account, before being saved.
+                Your plaintext password is never stored and can't be recovered from the database.
+            </p>
+            <p class="mb-4">
+                <svg class="icon"><use href="#icon-warning"></use></svg>
+                For your own security, please don't reuse a password you use anywhere else.
+            </p>
+
+            <h2 class="h5">Profile Images</h2>
+            <p class="mb-0">
+                Profile images you upload are visible to you while signed in, and to Administrators
+                managing user accounts on the Admin page. They are not shown to other Employee users.
+            </p>
+        </div>
+    </div>
+</div>

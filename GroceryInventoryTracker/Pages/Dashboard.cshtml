@@ -25,7 +25,7 @@
                 <div class="card-body">
                     <svg class="icon icon-lg stat-icon"><use href="#icon-warning"></use></svg>
                     <div class="stat-number" id="stat-low-stock-count">@Model.Summary.LowStockCount</div>
-                    <div class="stat-label">Low Stock (&lt; @Model.LowStockThreshold)</div>
+                    <div class="stat-label">Low Stock (below each product's threshold)</div>
                     <ul class="stat-list" id="list-low-stock">
                         @foreach (var name in Model.Summary.LowStockProducts)
                         {

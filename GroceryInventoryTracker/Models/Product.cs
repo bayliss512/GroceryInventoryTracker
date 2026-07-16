@@ -28,6 +28,14 @@ namespace GroceryInventoryTracker.Models
 
         public bool IsPerishable { get; set; } = true;
 
+        public const int DefaultLowStockThreshold = 20;
+
+        // Total quantity (across all shipments/locations) at or below out-of-stock is 0, and this
+        // is the dividing line between "low stock" and "well stocked" — configurable per product
+        // since a case of soda and a single high-value item shouldn't share one global number.
+        [Range(0, int.MaxValue, ErrorMessage = "Low stock threshold cannot be negative.")]
+        public int LowStockThreshold { get; set; } = DefaultLowStockThreshold;
+
         public ICollection<Shipment> Shipments { get; set; } = new List<Shipment>();
     }
 }

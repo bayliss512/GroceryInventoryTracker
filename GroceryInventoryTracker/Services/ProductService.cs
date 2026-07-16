@@ -182,6 +182,7 @@ namespace GroceryInventoryTracker.Services
             product.CategoryId = updated.CategoryId;
             product.ImagePath = updated.ImagePath;
             product.IsPerishable = updated.IsPerishable;
+            product.LowStockThreshold = updated.LowStockThreshold;
 
             await _db.SaveChangesAsync();
             return true;

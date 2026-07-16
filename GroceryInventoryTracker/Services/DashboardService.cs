@@ -8,7 +8,6 @@ namespace GroceryInventoryTracker.Services
     {
         private readonly InventoryDbContext _db;
 
-        public const int LowStockThreshold = 20;
         public const int ExpiringSoonDays = 7;
         private const int ListSize = 5;
 
@@ -65,9 +64,10 @@ namespace GroceryInventoryTracker.Services
             };
 
             // Classify every product as out-of-stock, low-stock, or fine using a single
-            // grouped query, avoiding a per-product N+1.
+            // grouped query, avoiding a per-product N+1. Each product carries its own
+            // LowStockThreshold, so this can't be a single global cutoff.
             var products = await _db.Products
-                .Select(p => new { p.Id, p.Name })
+                .Select(p => new { p.Id, p.Name, p.LowStockThreshold })
                 .ToListAsync();
 
             var stockTotals = await _db.Shipments
@@ -85,7 +85,7 @@ namespace GroceryInventoryTracker.Services
                 {
                     outOfStock.Add(product.Name);
                 }
-                else if (total < LowStockThreshold)
+                else if (total < product.LowStockThreshold)
                 {
                     lowStock.Add(product.Name);
                 }

@@ -53,6 +53,7 @@ IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
             {
                 b.HasKey(p => p.Id);
                 b.Property(p => p.Name).IsRequired();
+                b.Property(p => p.LowStockThreshold).IsRequired().HasDefaultValue(Product.DefaultLowStockThreshold);
                 b.HasOne(p => p.Category)
                     .WithMany(c => c.Products)
                     .HasForeignKey(p => p.CategoryId)
@@ -462,32 +463,85 @@ IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
 
             modelBuilder.Entity<Product>().HasData(products);
 
-            // Seed shipments - sample shipments for variety
-            // Anchored to a fixed date (not DateTime.Now) so the seed data - and therefore the EF Core
-            // model snapshot - is deterministic between builds; HasData with a non-deterministic value
-            // makes EF think the model changes on every build and fails migration validation.
+            // Seed shipments for every product (not just a subset) with deterministic — not purely
+            // random — stock-level and expiration buckets, so the dashboard's Out of Stock, Low
+            // Stock, and Expiring Soon widgets always have real, varied data rather than leaving
+            // that up to chance (a prior version only seeded the first 50 of 288 products, and
+            // relied on unbucketed randomness for quantities that happened to never land below the
+            // low-stock threshold).
+            //
+            // Anchored to fixed dates (not DateTime.Now/Today) so the seed data — and therefore the
+            // EF Core model snapshot — stays deterministic between builds; HasData with a
+            // non-deterministic value makes EF think the model changes on every build and fails
+            // migration validation. expirationAnchor is fixed close to "today" as of when this seed
+            // data was authored so the Expired/Expiring Soon buckets read correctly for a near-term
+            // demo; like the rest of this static seed data it will read as increasingly stale the
+            // longer after that date the app is first run.
             var shipments = new List<Shipment>();
-            int shipmentId = 1;
-            var random = new Random(42); // Use seed for reproducibility
-            // Separate instance so adding CreatedAt doesn't shift the draws above and change
-            // the existing seeded quantities/locations/expiration dates/shipment counts.
+            var shipmentId = 1;
+            var quantityRandom = new Random(42);
+            // Separate instances so each draw sequence is independent of the others.
             var createdAtRandom = new Random(99);
+            var expirationRandom = new Random(7);
             var seedAnchorDate = new DateTime(2026, 1, 1);
+            var expirationAnchor = new DateTime(2026, 7, 15);
+            var shipmentIndex = 0;
 
-            foreach (var product in products.Take(50)) // Add shipments for first 50 products
+            for (var i = 0; i < products.Count; i++)
             {
-                for (int i = 0; i < random.Next(2, 4); i++)
+                var product = products[i];
+
+                // Every 10th product is out of stock, two more of every ten are low stock (below
+                // Product.DefaultLowStockThreshold), and the rest are comfortably well stocked.
+                int shipmentCount;
+                Func<int> nextQuantity;
+                var stockBucket = i % 10;
+                if (stockBucket == 0)
                 {
+                    shipmentCount = quantityRandom.Next(1, 3);
+                    nextQuantity = () => 0; // shipment record exists, but stock has been fully depleted
+                }
+                else if (stockBucket is 1 or 2)
+                {
+                    shipmentCount = 1;
+                    nextQuantity = () => quantityRandom.Next(1, Product.DefaultLowStockThreshold);
+                }
+                else
+                {
+                    shipmentCount = quantityRandom.Next(2, 4);
+                    nextQuantity = () => quantityRandom.Next(20, 100);
+                }
+
+                for (var s = 0; s < shipmentCount; s++)
+                {
+                    // Non-perishable products (cleaning/household supplies) don't get an expiration
+                    // date. Perishables cycle through expired / expiring-within-the-window /
+                    // expiring-soon-ish / not-expiring-soon buckets, decorrelated from the stock
+                    // bucket above via a running shipment counter.
+                    DateTime? expirationDate = null;
+                    if (product.IsPerishable)
+                    {
+                        expirationDate = (shipmentIndex % 6) switch
+                        {
+                            0 => expirationAnchor.AddDays(-expirationRandom.Next(1, 30)),
+                            1 => expirationAnchor.AddDays(expirationRandom.Next(0, 8)), // within the 7-day "expiring soon" window
+                            2 => expirationAnchor.AddDays(expirationRandom.Next(8, 30)),
+                            _ => expirationAnchor.AddDays(expirationRandom.Next(31, 365))
+                        };
+                    }
+
                     shipments.Add(new Shipment
                     {
                         Id = shipmentId++,
                         ProductId = product.Id,
-                        ShipmentNumber = $"SHP-{product.Id:000}-{i + 1:00}",
-                        ExpirationDate = seedAnchorDate.AddDays(random.Next(30, 365)),
-                        Quantity = random.Next(10, 100),
-                        Location = random.Next(0, 2) == 0 ? "InStorage" : "OnFloor",
+                        ShipmentNumber = $"SHP-{product.Id:000}-{s + 1:00}",
+                        ExpirationDate = expirationDate,
+                        Quantity = nextQuantity(),
+                        Location = quantityRandom.Next(0, 2) == 0 ? "InStorage" : "OnFloor",
                         CreatedAt = seedAnchorDate.AddDays(-createdAtRandom.Next(1, 60))
                     });
+
+                    shipmentIndex++;
                 }
             }
 

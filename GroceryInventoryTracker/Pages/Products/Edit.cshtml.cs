@@ -41,6 +41,9 @@ namespace GroceryInventoryTracker.Pages.Products
             public string? ImagePath { get; set; }
 
             public bool IsPerishable { get; set; } = true;
+
+            [Range(0, int.MaxValue, ErrorMessage = "Low stock threshold cannot be negative.")]
+            public int LowStockThreshold { get; set; } = Product.DefaultLowStockThreshold;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -56,7 +59,8 @@ namespace GroceryInventoryTracker.Pages.Products
                 Name = product.Name,
                 CategoryId = product.CategoryId,
                 ImagePath = product.ImagePath,
-                IsPerishable = product.IsPerishable
+                IsPerishable = product.IsPerishable,
+                LowStockThreshold = product.LowStockThreshold
             };
             await LoadCategoryOptionsAsync();
             return Page();
@@ -75,7 +79,8 @@ namespace GroceryInventoryTracker.Pages.Products
                 Name = Input.Name.Trim(),
                 CategoryId = Input.CategoryId,
                 ImagePath = string.IsNullOrWhiteSpace(Input.ImagePath) ? null : Input.ImagePath.Trim(),
-                IsPerishable = Input.IsPerishable
+                IsPerishable = Input.IsPerishable,
+                LowStockThreshold = Input.LowStockThreshold
             });
 
             if (!updated)
@@ -85,7 +90,7 @@ namespace GroceryInventoryTracker.Pages.Products
             }
 
             await _audit.LogAsync(User.Identity?.Name, "ProductModified",
-                $"Modified product '{Input.Name.Trim()}' (Id={Id}): category={Input.CategoryId}, perishable={Input.IsPerishable}.");
+                $"Modified product '{Input.Name.Trim()}' (Id={Id}): category={Input.CategoryId}, perishable={Input.IsPerishable}, lowStockThreshold={Input.LowStockThreshold}.");
 
             TempData["SuccessMessage"] = "Product updated.";
             return RedirectToPage("Index");

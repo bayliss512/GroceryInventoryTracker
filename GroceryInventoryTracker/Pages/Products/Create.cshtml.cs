@@ -38,6 +38,9 @@ namespace GroceryInventoryTracker.Pages.Products
             public string? ImagePath { get; set; }
 
             public bool IsPerishable { get; set; } = true;
+
+            [Range(0, int.MaxValue, ErrorMessage = "Low stock threshold cannot be negative.")]
+            public int LowStockThreshold { get; set; } = Product.DefaultLowStockThreshold;
         }
 
         public async Task OnGetAsync()
@@ -58,7 +61,8 @@ namespace GroceryInventoryTracker.Pages.Products
                 Name = Input.Name.Trim(),
                 CategoryId = Input.CategoryId,
                 ImagePath = string.IsNullOrWhiteSpace(Input.ImagePath) ? null : Input.ImagePath.Trim(),
-                IsPerishable = Input.IsPerishable
+                IsPerishable = Input.IsPerishable,
+                LowStockThreshold = Input.LowStockThreshold
             });
             await _audit.LogAsync(User.Identity?.Name, "ProductCreated", $"Created product '{Input.Name.Trim()}'.");
 
