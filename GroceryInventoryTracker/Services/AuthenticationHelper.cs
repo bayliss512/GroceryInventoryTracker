@@ -17,7 +17,8 @@ namespace GroceryInventoryTracker.Services
             {
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim("IconSvg", user.IconSvg),
-                new Claim(ClaimTypes.Role, user.IsAdmin ? "Administrator" : "Employee")
+                new Claim(ClaimTypes.Role, user.IsAdmin ? "Administrator" : "Employee"),
+                new Claim("Theme", user.DarkModeEnabled ? "dark" : "light")
             };
 
             if (!string.IsNullOrEmpty(user.ProfileImagePath))

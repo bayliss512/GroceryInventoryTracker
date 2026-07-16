@@ -45,9 +45,18 @@ namespace GroceryInventoryTracker.Pages
         [BindProperty]
         public IFormFile? ProfilePicture { get; set; }
 
+        [BindProperty]
+        public bool DarkModeEnabled { get; set; }
+
         public async Task<IActionResult> OnGetAsync()
         {
-            return await LoadCurrentUserAsync() ? Page() : await SignOutToAccountAsync();
+            if (!await LoadCurrentUserAsync())
+            {
+                return await SignOutToAccountAsync();
+            }
+
+            DarkModeEnabled = CurrentUser!.DarkModeEnabled;
+            return Page();
         }
 
         public async Task<IActionResult> OnPostChangePasswordAsync()
@@ -83,6 +92,26 @@ namespace GroceryInventoryTracker.Pages
             }
 
             SuccessMessage = "Password changed successfully.";
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostToggleThemeAsync()
+        {
+            if (!await LoadCurrentUserAsync())
+            {
+                return await SignOutToAccountAsync();
+            }
+
+            var updated = await _users.SetDarkModeEnabledAsync(User.Identity!.Name!, DarkModeEnabled);
+            if (updated == null)
+            {
+                return await SignOutToAccountAsync();
+            }
+
+            // Refresh the cookie so the new theme claim takes effect on the very next request.
+            await AuthenticationHelper.SignInAsync(HttpContext, updated);
+
+            SuccessMessage = DarkModeEnabled ? "Dark mode enabled." : "Dark mode disabled.";
             return RedirectToPage();
         }
 

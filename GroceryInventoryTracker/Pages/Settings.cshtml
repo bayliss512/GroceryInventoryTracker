@@ -29,7 +29,24 @@
     <div class="row g-4">
         <div class="col-md-6">
             <div class="card h-100">
-                <div class="card-header bg-light">
+                <div class="card-header bg-body-tertiary">
+                    <h5 class="mb-0">Appearance</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-page-handler="ToggleTheme">
+                        <div class="form-check form-switch fs-5">
+                            <input asp-for="DarkModeEnabled" class="form-check-input" role="switch" onchange="this.form.submit()" />
+                            <label asp-for="DarkModeEnabled" class="form-check-label fs-6">Dark mode</label>
+                        </div>
+                        <div class="form-text">Switch between light and dark themes for the whole app.</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-body-tertiary">
                     <h5 class="mb-0">Profile Picture</h5>
                 </div>
                 <div class="card-body">
@@ -65,7 +82,7 @@
 
         <div class="col-md-6">
             <div class="card h-100">
-                <div class="card-header bg-light">
+                <div class="card-header bg-body-tertiary">
                     <h5 class="mb-0">Change Password</h5>
                 </div>
                 <div class="card-body">

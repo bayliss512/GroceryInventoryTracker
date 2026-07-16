@@ -35,6 +35,8 @@ activity — without anyone having to dig through the catalog manually.
 - **UI polish** — responsive layout, an inline SVG icon set (no external icon-font dependency),
   accessible confirmation modals in place of native `confirm()` dialogs, loading indicators, and shared
   empty-state messaging.
+- **Dark mode** — a per-user light/dark theme toggle on the Settings page, persisted server-side and
+  applied instantly via Bootstrap's `data-bs-theme`.
 - **Automated tests** — 91 xUnit tests across services, authentication/authorization coverage, and
   database/migration correctness (see [Testing](#testing)).
 - **Docker** — one-command startup via Docker Compose (app + SQL Server, with a persistent data volume).
@@ -159,7 +161,11 @@ records the actor by name so the audit trail survives account deletion.
 
 ![Admin user management](docs/screenshots/admin-users.png)
 
-More views worth capturing later: the Audit History page and the Admin user-management page.
+**Audit History** — a full record of inventory and user-management changes, who made them, and when.
+
+![Audit History](docs/screenshots/audit-history.png)
+
+Dark mode (toggled per-user from Settings — see [Features](#features)) is shown above.
 
 ## Getting Started (local development)
 
@@ -284,5 +290,4 @@ GroceryInventoryTracker/
 
 - Auto-deploy the published GHCR image to a live host (e.g. Azure App Service, Fly.io) once a hosting
   target is chosen.
-- A screenshot of the Audit History page.
 - A LICENSE file (none is currently included in the repository).

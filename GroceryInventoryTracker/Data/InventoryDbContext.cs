@@ -87,6 +87,7 @@ IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
                 b.Property(u => u.PasswordHash).IsRequired();
                 b.Property(u => u.IconSvg).IsRequired();
                 b.Property(u => u.IsAdmin).IsRequired().HasDefaultValue(false);
+                b.Property(u => u.DarkModeEnabled).IsRequired().HasDefaultValue(false);
                 b.HasIndex(u => u.Username).IsUnique();
             });
 

@@ -119,6 +119,22 @@ namespace GroceryInventoryTracker.Services
             return user;
         }
 
+        /// <summary>
+        /// Sets the user's dark mode preference. Returns the updated user, or null if not found.
+        /// </summary>
+        public async Task<User?> SetDarkModeEnabledAsync(string username, bool enabled)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null)
+            {
+                return null;
+            }
+
+            user.DarkModeEnabled = enabled;
+            await _db.SaveChangesAsync();
+            return user;
+        }
+
         public async Task<List<User>> GetAllUsersAsync()
         {
             return await _db.Users

@@ -1,6 +1,9 @@
 ﻿@inject IWebHostEnvironment WebHostEnvironment
+@{
+    var isDarkMode = User.FindFirst("Theme")?.Value == "dark";
+}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="@(isDarkMode ? "dark" : "light")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,7 +16,7 @@
 <body>
     <partial name="_IconSprite" />
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm bg-body-tertiary border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-page="/Index">GroceryInventoryTracker</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -23,15 +26,15 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Dashboard">Dashboard</a>
+                                <a class="nav-link" asp-area="" asp-page="/Dashboard">Dashboard</a>
                             </li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link text-dark dropdown-toggle" href="#" id="manageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle" href="#" id="manageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Manage
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="manageDropdown">
@@ -46,18 +49,18 @@
                             </li>
                         }
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
                         @if (User.IsInRole("Administrator"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Admin">Admin</a>
+                                <a class="nav-link" asp-area="" asp-page="/Admin">Admin</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Audit/Index">Audit History</a>
+                                <a class="nav-link" asp-area="" asp-page="/Audit/Index">Audit History</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Configuration">Configuration</a>
+                                <a class="nav-link" asp-area="" asp-page="/Configuration">Configuration</a>
                             </li>
                         }
                     </ul>
@@ -75,7 +78,7 @@
                                     @Html.Raw(User.FindFirst("IconSvg")?.Value)
                                 }
                             </a>
-                            <a asp-page="/Settings" class="text-dark text-decoration-none">@User.Identity.Name</a>
+                            <a asp-page="/Settings" class="text-decoration-none">@User.Identity.Name</a>
                             <form method="post" asp-page="/Account" asp-page-handler="Logout" class="d-inline mb-0">
                                 <button type="submit" class="btn btn-outline-secondary btn-sm">Log Out</button>
                             </form>

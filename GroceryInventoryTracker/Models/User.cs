@@ -25,5 +25,8 @@ namespace GroceryInventoryTracker.Models
 
         // Grants access to the /Admin page (user management). The first account created is made admin automatically.
         public bool IsAdmin { get; set; }
+
+        // User-level dark mode preference, toggled from /Settings.
+        public bool DarkModeEnabled { get; set; }
     }
 }
