@@ -48,87 +48,15 @@
                 </select>
             </div>
             <div class="input-group search-input-group">
-                <input id="searchInput" name="Search" value="@Model.Search" type="text" class="form-control" placeholder="Search products or categories..." aria-label="Search" />
+                <input id="searchInput" name="Search" value="@Model.Search" type="text" class="form-control" placeholder="Search products or categories..." aria-label="Search" autocomplete="off" />
                 <button class="btn btn-primary" type="submit">Search</button>
             </div>
         </form>
-        <div class="mt-2 text-muted">
-            @if (Model.TotalCount > 0)
-            {
-                <small>@Model.TotalCount product(s) found.</small>
-            }
-            else
-            {
-                <small>No products found.</small>
-            }
-        </div>
     </section>
 
-    <section class="product-list">
-        @if (Model.Products?.Any() != true)
-        {
-            <div class="empty-state">
-                @{
-                    var hasActiveFilters = !string.IsNullOrEmpty(Model.Search) || Model.CategoryId.HasValue
-                        || Model.SupplierId.HasValue || !string.IsNullOrEmpty(Model.ExpirationFilter);
-                }
-                @if (!hasActiveFilters)
-                {
-                    <p class="text-muted">No products available. Use the Configuration page to initialize the database with sample data.</p>
-                }
-                else
-                {
-                    <p class="text-muted">No products found matching your filters. Try adjusting your search or filters.</p>
-                }
-            </div>
-        }
-        else if (string.IsNullOrEmpty(Model.SortBy) || Model.SortBy == "Name")
-        {
-            @foreach (var group in Model.Products.GroupBy(p => p.Category?.Name ?? "Uncategorized"))
-            {
-                <div class="category-section">
-                    <h3 class="category-header">@group.Key</h3>
-                    <div class="product-grid">
-                        @foreach (var p in group)
-                        {
-                            @await Html.PartialAsync("_ProductCard", p)
-                        }
-                    </div>
-                </div>
-            }
-        }
-        else
-        {
-            <!-- Flat ranked list: category grouping would fragment the visible order for these sorts -->
-            <div class="product-grid">
-                @foreach (var p in Model.Products)
-                {
-                    @await Html.PartialAsync("_ProductCard", p)
-                }
-            </div>
-        }
-
-        <!-- Pagination -->
-        @if (Model.TotalPages > 1)
-        {
-            <nav aria-label="Page navigation" class="pagination-nav">
-                <ul class="pagination">
-                    <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Model.PageUrl(Model.CurrentPage - 1)">Previous</a>
-                    </li>
-                    @for (int i = 1; i <= Model.TotalPages; i++)
-                    {
-                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                            <a class="page-link" href="@Model.PageUrl(i)">@i</a>
-                        </li>
-                    }
-                    <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Model.PageUrl(Model.CurrentPage + 1)">Next</a>
-                    </li>
-                </ul>
-            </nav>
-        }
-    </section>
+    <div id="searchResults">
+        @await Html.PartialAsync("_ProductResults", Model)
+    </div>
 
     <!-- Product Modal -->
     <div id="productModal" class="custom-modal" role="dialog" aria-hidden="true">
@@ -146,4 +74,6 @@
     </div>
 </div>
 
-<script src="~/js/inventory.js"></script>
+<script src="~/lib/qrcode-generator/qrcode.js"></script>
+<!-- inventory.js is loaded globally from _Layout.cshtml -->
+

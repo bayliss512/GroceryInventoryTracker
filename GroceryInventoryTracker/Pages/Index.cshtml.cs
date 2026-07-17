@@ -55,6 +55,21 @@ namespace GroceryInventoryTracker.Pages
 
             public async Task OnGetAsync()
             {
+                await LoadProductsAsync();
+            }
+
+            /// <summary>
+            /// AJAX handler used by the live search box: returns just the results markup
+            /// (product grid + pagination) so the page can be updated without a full reload.
+            /// </summary>
+            public async Task<IActionResult> OnGetResultsAsync()
+            {
+                await LoadProductsAsync();
+                return Partial("_ProductResults", this);
+            }
+
+            private async Task LoadProductsAsync()
+            {
                 try
                 {
                     var pageToUse = CurrentPage < 1 ? 1 : CurrentPage;

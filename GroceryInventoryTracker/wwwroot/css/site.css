@@ -139,6 +139,55 @@ body {
   background-color: var(--bs-tertiary-bg);
 }
 
+.shipment-row {
+  cursor: pointer;
+}
+
+/* Shipment QR code view */
+.qr-code-wrap {
+  display: inline-block;
+  padding: 0.75rem;
+  background: #fff;
+  border-radius: 6px;
+}
+
+.qr-code-wrap svg {
+  width: 200px;
+  height: 200px;
+  display: block;
+}
+
+.qr-details-table {
+  text-align: left;
+}
+
+.qr-details-table th {
+  width: 40%;
+  color: var(--bs-secondary-color);
+  font-weight: 600;
+}
+
+/* Hidden print area: populated with the QR code + shipment details just before printing.
+   See .printing-qr below, which hides everything else in the document while it prints. */
+#qrPrintArea {
+  display: none;
+}
+
+@media print {
+  body.printing-qr > *:not(#qrPrintArea) {
+    display: none !important;
+  }
+
+  body.printing-qr #qrPrintArea {
+    display: block !important;
+    text-align: center;
+  }
+
+  body.printing-qr #qrPrintArea .qr-code-wrap {
+    background: #fff;
+  }
+}
+
 .custom-modal-body .badge {
   font-size: 0.85rem;
   padding: 0.4rem 0.6rem;
