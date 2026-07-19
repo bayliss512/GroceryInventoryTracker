@@ -7,6 +7,8 @@ suppliers, and shipments — with role-based access control, a live dashboard, a
 who changed what. Built with Entity Framework Core against SQL Server, containerized with Docker, and
 covered by a 91-test xUnit suite that runs in CI on every push.
 
+I host this project through Cloudflare at http://grocery.cbayliss.org/
+
 ## Overview
 
 Employees can browse and search the product catalog, receive shipments, and update stock levels.
