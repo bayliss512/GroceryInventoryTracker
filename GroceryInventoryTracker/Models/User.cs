@@ -23,8 +23,9 @@ namespace GroceryInventoryTracker.Models
 
         public DateTime CreatedAt { get; set; }
 
-        // Grants access to the /Admin page (user management). The first account created is made admin automatically.
-        public bool IsAdmin { get; set; }
+        // Guest by default; the first account created is made Administrator automatically.
+        // Employee and Administrator can only be granted by an existing Administrator (see /Admin).
+        public UserRole Role { get; set; }
 
         // User-level dark mode preference, toggled from /Settings.
         public bool DarkModeEnabled { get; set; }

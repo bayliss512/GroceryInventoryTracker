@@ -33,33 +33,17 @@ namespace GroceryInventoryTracker.Pages
             Users = await _users.GetAllUsersAsync();
         }
 
-        public async Task<IActionResult> OnPostMakeAdminAsync(int id)
+        public async Task<IActionResult> OnPostSetRoleAsync(int id, UserRole role)
         {
             var target = await _users.GetByIdAsync(id);
-            if (!await _users.SetAdminAsync(id, true))
+            if (!await _users.SetRoleAsync(id, role))
             {
-                ErrorMessage = "Unable to grant admin access to that user.";
+                ErrorMessage = "Unable to update that user's role. At least one admin must remain.";
             }
             else
             {
-                SuccessMessage = "Admin access granted.";
-                await _audit.LogAsync(User.Identity?.Name, "UserPromoted", $"Granted Administrator role to '{target?.Username}' (Id={id}).");
-            }
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostRevokeAdminAsync(int id)
-        {
-            var target = await _users.GetByIdAsync(id);
-            if (!await _users.SetAdminAsync(id, false))
-            {
-                ErrorMessage = "Unable to revoke admin access. At least one admin must remain.";
-            }
-            else
-            {
-                SuccessMessage = "Admin access revoked.";
-                await _audit.LogAsync(User.Identity?.Name, "UserDemoted", $"Revoked Administrator role from '{target?.Username}' (Id={id}).");
+                SuccessMessage = $"Role updated to {role}.";
+                await _audit.LogAsync(User.Identity?.Name, "UserRoleChanged", $"Set role of '{target?.Username}' (Id={id}) to {role}.");
             }
 
             return RedirectToPage();

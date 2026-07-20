@@ -1,3 +1,4 @@
+using GroceryInventoryTracker.Models;
 using GroceryInventoryTracker.Services;
 using GroceryInventoryTracker.Tests.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -44,16 +45,16 @@ namespace GroceryInventoryTracker.Tests.Services
         {
             var first = await _users.CreateUserAsync("alice", "Password123");
 
-            Assert.True(first.IsAdmin);
+            Assert.Equal(UserRole.Administrator, first.Role);
         }
 
         [Fact]
-        public async Task CreateUserAsync_DoesNotMakeSubsequentUsersAdmin()
+        public async Task CreateUserAsync_MakesSubsequentUsersGuestsByDefault()
         {
             await _users.CreateUserAsync("alice", "Password123");
             var second = await _users.CreateUserAsync("bob", "Password123");
 
-            Assert.False(second.IsAdmin);
+            Assert.Equal(UserRole.Guest, second.Role);
         }
 
         [Fact]
@@ -125,42 +126,55 @@ namespace GroceryInventoryTracker.Tests.Services
         }
 
         [Fact]
-        public async Task SetAdminAsync_CannotRevokeTheLastRemainingAdmin()
+        public async Task SetRoleAsync_CannotDemoteTheLastRemainingAdmin()
         {
             var admin = await _users.CreateUserAsync("alice", "Password123");
 
-            var result = await _users.SetAdminAsync(admin.Id, false);
+            var result = await _users.SetRoleAsync(admin.Id, UserRole.Employee);
 
             Assert.False(result);
             var reloaded = await _users.GetByIdAsync(admin.Id);
-            Assert.True(reloaded!.IsAdmin);
+            Assert.Equal(UserRole.Administrator, reloaded!.Role);
         }
 
         [Fact]
-        public async Task SetAdminAsync_CanRevokeOneOfTwoAdmins()
+        public async Task SetRoleAsync_CanDemoteOneOfTwoAdmins()
         {
             var admin = await _users.CreateUserAsync("alice", "Password123");
             var second = await _users.CreateUserAsync("bob", "Password123");
-            await _users.SetAdminAsync(second.Id, true);
+            await _users.SetRoleAsync(second.Id, UserRole.Administrator);
 
-            var result = await _users.SetAdminAsync(second.Id, false);
+            var result = await _users.SetRoleAsync(second.Id, UserRole.Guest);
 
             Assert.True(result);
             var reloaded = await _users.GetByIdAsync(second.Id);
-            Assert.False(reloaded!.IsAdmin);
+            Assert.Equal(UserRole.Guest, reloaded!.Role);
         }
 
         [Fact]
-        public async Task SetAdminAsync_CanPromoteAStandardUser()
+        public async Task SetRoleAsync_CanPromoteAGuestToAdministrator()
         {
             await _users.CreateUserAsync("alice", "Password123");
             var bob = await _users.CreateUserAsync("bob", "Password123");
 
-            var result = await _users.SetAdminAsync(bob.Id, true);
+            var result = await _users.SetRoleAsync(bob.Id, UserRole.Administrator);
 
             Assert.True(result);
             var reloaded = await _users.GetByIdAsync(bob.Id);
-            Assert.True(reloaded!.IsAdmin);
+            Assert.Equal(UserRole.Administrator, reloaded!.Role);
+        }
+
+        [Fact]
+        public async Task SetRoleAsync_CanPromoteAGuestToEmployee()
+        {
+            await _users.CreateUserAsync("alice", "Password123");
+            var bob = await _users.CreateUserAsync("bob", "Password123");
+
+            var result = await _users.SetRoleAsync(bob.Id, UserRole.Employee);
+
+            Assert.True(result);
+            var reloaded = await _users.GetByIdAsync(bob.Id);
+            Assert.Equal(UserRole.Employee, reloaded!.Role);
         }
 
         [Fact]

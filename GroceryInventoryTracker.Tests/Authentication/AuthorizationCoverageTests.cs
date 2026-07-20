@@ -34,8 +34,6 @@ namespace GroceryInventoryTracker.Tests.Authentication
         }
 
         [Theory]
-        [InlineData(typeof(Pages.Shipments.CreateModel))]
-        [InlineData(typeof(Pages.Shipments.EditModel))]
         [InlineData(typeof(DashboardModel))]
         [InlineData(typeof(SettingsModel))]
         public void AnyAuthenticatedUserPages_RequireLoginButNoSpecificRole(Type pageModelType)
@@ -44,6 +42,17 @@ namespace GroceryInventoryTracker.Tests.Authentication
 
             Assert.NotNull(attribute);
             Assert.True(string.IsNullOrEmpty(attribute!.Roles));
+        }
+
+        [Theory]
+        [InlineData(typeof(Pages.Shipments.CreateModel))]
+        [InlineData(typeof(Pages.Shipments.EditModel))]
+        public void EmployeeAndAdministratorPages_ExcludeGuests(Type pageModelType)
+        {
+            var attribute = GetAuthorize(pageModelType);
+
+            Assert.NotNull(attribute);
+            Assert.Equal("Administrator,Employee", attribute!.Roles);
         }
 
         [Theory]

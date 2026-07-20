@@ -5,11 +5,12 @@
 An ASP.NET Core Razor Pages application for tracking grocery store inventory — products, categories,
 suppliers, and shipments — with role-based access control, a live dashboard, and a full audit trail of
 who changed what. Built with Entity Framework Core against SQL Server, containerized with Docker, and
-covered by a 91-test xUnit suite that runs in CI on every push.
+covered by a 94-test xUnit suite that runs in CI on every push.
 
 ## Overview
 
-Employees can browse and search the product catalog, receive shipments, and update stock levels.
+Guests (the default role for every new sign-up) can browse and search the product catalog and view the
+dashboard. Employees — promoted by an Administrator — can additionally receive and edit shipments.
 Administrators additionally manage products, categories, and suppliers; manage user accounts and
 roles; and review a complete audit history of inventory and account changes. The dashboard surfaces
 at-a-glance signals — out-of-stock and low-stock products, shipments expiring soon, and recent
@@ -25,7 +26,7 @@ activity — without anyone having to dig through the catalog manually.
 - **Search, filter, and sort** — combinable search-by-name, category filter, supplier filter, and
   expiration-window filter on the catalog, with stable sort by name/quantity/expiration/recently-updated
   and pagination that preserves every active filter across pages.
-- **Role-based access control** — Administrator and Employee roles enforced via
+- **Role-based access control** — Guest, Employee, and Administrator roles enforced via
   `[Authorize(Roles = "...")]` on every page (see [Roles & Permissions](#roles--permissions) below), not
   just hidden nav links.
 - **Audit log** — every product/category/supplier/shipment change and user promotion/demotion/deletion
@@ -72,18 +73,22 @@ flowchart TD
 
 ### Roles & Permissions
 
-| Action                                   | Employee | Administrator |
-|-------------------------------------------|:--------:|:-------------:|
-| View catalog, search/filter/sort           | ✅       | ✅             |
-| View dashboard                             | ✅       | ✅             |
-| Receive shipments / update quantities      | ✅       | ✅             |
-| Create/edit/delete Products                | ❌       | ✅             |
-| Create/edit/delete Categories              | ❌       | ✅             |
-| Create/edit/delete Suppliers               | ❌       | ✅             |
-| Delete shipments                           | ❌       | ✅             |
-| Manage user accounts / roles               | ❌       | ✅             |
-| View audit history                         | ❌       | ✅             |
-| Database Configuration page (dev tooling)  | ❌       | ✅             |
+Guest is the default role for every new sign-up (aside from the very first account, which becomes
+Administrator automatically). Employee and Administrator can only be granted by an existing
+Administrator, from the Admin page.
+
+| Action                                   | Guest | Employee | Administrator |
+|-------------------------------------------|:-----:|:--------:|:-------------:|
+| View catalog, search/filter/sort           | ✅    | ✅       | ✅             |
+| View dashboard                             | ✅    | ✅       | ✅             |
+| Receive/edit shipments / update quantities | ❌    | ✅       | ✅             |
+| Create/edit/delete Products                | ❌    | ❌       | ✅             |
+| Create/edit/delete Categories              | ❌    | ❌       | ✅             |
+| Create/edit/delete Suppliers               | ❌    | ❌       | ✅             |
+| Delete shipments                           | ❌    | ❌       | ✅             |
+| Manage user accounts / roles               | ❌    | ❌       | ✅             |
+| View audit history                         | ❌    | ❌       | ✅             |
+| Database Configuration page (dev tooling)  | ❌    | ❌       | ✅             |
 
 ## Database Schema
 
@@ -129,7 +134,7 @@ erDiagram
         string IconSvg
         string ProfileImagePath
         datetime CreatedAt
-        bool IsAdmin
+        UserRole Role "Guest, Employee, or Administrator"
     }
     AuditLog {
         int Id PK

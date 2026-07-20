@@ -25,7 +25,7 @@ namespace GroceryInventoryTracker.Tests.Authentication
         public async Task SignInAsync_GrantsTheAdministratorRoleToAnAdminUser()
         {
             var (context, auth) = CreateHttpContext();
-            var user = new User { Username = "alice", PasswordHash = "x", IconSvg = "<svg></svg>", IsAdmin = true };
+            var user = new User { Username = "alice", PasswordHash = "x", IconSvg = "<svg></svg>", Role = UserRole.Administrator };
 
             await AuthenticationHelper.SignInAsync(context, user);
 
@@ -33,10 +33,10 @@ namespace GroceryInventoryTracker.Tests.Authentication
         }
 
         [Fact]
-        public async Task SignInAsync_GrantsTheEmployeeRoleToAStandardUser()
+        public async Task SignInAsync_GrantsTheEmployeeRoleToAnEmployeeUser()
         {
             var (context, auth) = CreateHttpContext();
-            var user = new User { Username = "bob", PasswordHash = "x", IconSvg = "<svg></svg>", IsAdmin = false };
+            var user = new User { Username = "bob", PasswordHash = "x", IconSvg = "<svg></svg>", Role = UserRole.Employee };
 
             await AuthenticationHelper.SignInAsync(context, user);
 
@@ -44,10 +44,21 @@ namespace GroceryInventoryTracker.Tests.Authentication
         }
 
         [Fact]
+        public async Task SignInAsync_GrantsTheGuestRoleToAGuestUser()
+        {
+            var (context, auth) = CreateHttpContext();
+            var user = new User { Username = "carol", PasswordHash = "x", IconSvg = "<svg></svg>", Role = UserRole.Guest };
+
+            await AuthenticationHelper.SignInAsync(context, user);
+
+            Assert.Equal("Guest", auth.Principal!.FindFirst(ClaimTypes.Role)!.Value);
+        }
+
+        [Fact]
         public async Task SignInAsync_SetsTheNameAndIconClaims()
         {
             var (context, auth) = CreateHttpContext();
-            var user = new User { Username = "alice", PasswordHash = "x", IconSvg = "<svg>identicon</svg>", IsAdmin = false };
+            var user = new User { Username = "alice", PasswordHash = "x", IconSvg = "<svg>identicon</svg>", Role = UserRole.Guest };
 
             await AuthenticationHelper.SignInAsync(context, user);
 
@@ -59,7 +70,7 @@ namespace GroceryInventoryTracker.Tests.Authentication
         public async Task SignInAsync_OmitsTheProfileImageClaimWhenTheUserHasNoUploadedPicture()
         {
             var (context, auth) = CreateHttpContext();
-            var user = new User { Username = "alice", PasswordHash = "x", IconSvg = "<svg></svg>", IsAdmin = false, ProfileImagePath = null };
+            var user = new User { Username = "alice", PasswordHash = "x", IconSvg = "<svg></svg>", Role = UserRole.Guest, ProfileImagePath = null };
 
             await AuthenticationHelper.SignInAsync(context, user);
 
@@ -70,7 +81,7 @@ namespace GroceryInventoryTracker.Tests.Authentication
         public async Task SignInAsync_IncludesTheProfileImageClaimWhenSet()
         {
             var (context, auth) = CreateHttpContext();
-            var user = new User { Username = "alice", PasswordHash = "x", IconSvg = "<svg></svg>", IsAdmin = false, ProfileImagePath = "/uploads/alice.png" };
+            var user = new User { Username = "alice", PasswordHash = "x", IconSvg = "<svg></svg>", Role = UserRole.Guest, ProfileImagePath = "/uploads/alice.png" };
 
             await AuthenticationHelper.SignInAsync(context, user);
 
@@ -81,7 +92,7 @@ namespace GroceryInventoryTracker.Tests.Authentication
         public async Task SignInAsync_UsesTheCookieSchemeAndAPersistentCookie()
         {
             var (context, auth) = CreateHttpContext();
-            var user = new User { Username = "alice", PasswordHash = "x", IconSvg = "<svg></svg>", IsAdmin = false };
+            var user = new User { Username = "alice", PasswordHash = "x", IconSvg = "<svg></svg>", Role = UserRole.Guest };
 
             await AuthenticationHelper.SignInAsync(context, user);
 

@@ -60,7 +60,7 @@ namespace GroceryInventoryTracker.Services
                 PasswordHash = HashPassword(password),
                 IconSvg = GenerateIdenticonSvg(),
                 CreatedAt = DateTime.UtcNow,
-                IsAdmin = isFirstUser
+                Role = isFirstUser ? UserRole.Administrator : UserRole.Guest
             };
 
             _db.Users.Add(user);
@@ -151,10 +151,10 @@ namespace GroceryInventoryTracker.Services
         }
 
         /// <summary>
-        /// Grants or revokes admin access for a user. Returns false if the user does not
-        /// exist, or if this would leave the system with no remaining admins.
+        /// Sets a user's role (Guest, Employee, or Administrator). Returns false if the user
+        /// does not exist, or if this would leave the system with no remaining admins.
         /// </summary>
-        public async Task<bool> SetAdminAsync(int userId, bool isAdmin)
+        public async Task<bool> SetRoleAsync(int userId, UserRole role)
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
@@ -162,15 +162,16 @@ namespace GroceryInventoryTracker.Services
                 return false;
             }
 
-            if (user.IsAdmin && !isAdmin && await _db.Users.CountAsync(u => u.IsAdmin) <= 1)
+            if (user.Role == UserRole.Administrator && role != UserRole.Administrator
+                && await _db.Users.CountAsync(u => u.Role == UserRole.Administrator) <= 1)
             {
                 return false;
             }
 
-            user.IsAdmin = isAdmin;
+            user.Role = role;
             await _db.SaveChangesAsync();
 
-            _logger.LogInformation($"User '{user.Username}' admin access set to {isAdmin}.");
+            _logger.LogInformation($"User '{user.Username}' role set to {role}.");
             return true;
         }
 
@@ -186,7 +187,7 @@ namespace GroceryInventoryTracker.Services
                 return false;
             }
 
-            if (user.IsAdmin && await _db.Users.CountAsync(u => u.IsAdmin) <= 1)
+            if (user.Role == UserRole.Administrator && await _db.Users.CountAsync(u => u.Role == UserRole.Administrator) <= 1)
             {
                 return false;
             }

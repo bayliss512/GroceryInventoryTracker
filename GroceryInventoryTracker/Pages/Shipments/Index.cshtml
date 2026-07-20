@@ -2,6 +2,7 @@
 @model GroceryInventoryTracker.Pages.Shipments.IndexModel
 @{
     ViewData["Title"] = "Shipments";
+    var canManageShipments = User.IsInRole("Administrator") || User.IsInRole("Employee");
 }
 
 <div class="shipments-page">
@@ -10,7 +11,7 @@
             <h1>Shipments</h1>
             <p class="lead mb-0">Incoming inventory received from suppliers.</p>
         </div>
-        @if (User.Identity?.IsAuthenticated == true)
+        @if (canManageShipments)
         {
             <a asp-page="Create" class="btn btn-primary"><svg class="icon"><use href="#icon-plus"></use></svg>New Shipment</a>
         }
@@ -53,8 +54,8 @@
                 {
                     Icon = "icon-truck",
                     Message = "No shipments found.",
-                    CtaText = User.Identity?.IsAuthenticated == true ? "New Shipment" : null,
-                    CtaHref = User.Identity?.IsAuthenticated == true ? Url.Page("Create") : null
+                    CtaText = canManageShipments ? "New Shipment" : null,
+                    CtaHref = canManageShipments ? Url.Page("Create") : null
                 })
             }
             else
@@ -69,7 +70,7 @@
                                 <th>Expiration</th>
                                 <th>Quantity</th>
                                 <th>Location</th>
-                                @if (User.Identity?.IsAuthenticated == true)
+                                @if (canManageShipments)
                                 {
                                     <th class="text-end">Actions</th>
                                 }
@@ -94,7 +95,7 @@
                                             <span class="badge bg-info">In Storage</span>
                                         }
                                     </td>
-                                    @if (User.Identity?.IsAuthenticated == true)
+                                    @if (canManageShipments)
                                     {
                                         <td class="text-end">
                                             <div class="d-inline-flex gap-2">

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace GroceryInventoryTracker.Pages.Shipments
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator,Employee")]
     public class CreateModel : PageModel
     {
         private readonly ShipmentService _shipments;

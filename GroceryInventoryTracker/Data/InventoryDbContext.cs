@@ -34,15 +34,21 @@ BEGIN
         [IconSvg] nvarchar(max) NOT NULL,
         [ProfileImagePath] nvarchar(max) NULL,
         [CreatedAt] datetime2 NOT NULL,
-        [IsAdmin] bit NOT NULL DEFAULT 0,
+        [Role] int NOT NULL DEFAULT 0,
         CONSTRAINT [PK_Users] PRIMARY KEY ([Id])
     );
     CREATE UNIQUE INDEX [IX_Users_Username] ON [Users] ([Username]);
 END;
 IF COL_LENGTH(N'[Users]', 'ProfileImagePath') IS NULL
     ALTER TABLE [Users] ADD [ProfileImagePath] nvarchar(max) NULL;
-IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
-    ALTER TABLE [Users] ADD [IsAdmin] bit NOT NULL DEFAULT 0;");
+IF COL_LENGTH(N'[Users]', 'Role') IS NULL
+BEGIN
+    ALTER TABLE [Users] ADD [Role] int NOT NULL DEFAULT 0;
+    IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NOT NULL
+        EXEC(N'UPDATE [Users] SET [Role] = 2 WHERE [IsAdmin] = 1');
+END;
+IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NOT NULL
+    ALTER TABLE [Users] DROP COLUMN [IsAdmin];");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -86,7 +92,7 @@ IF COL_LENGTH(N'[Users]', 'IsAdmin') IS NULL
                 b.Property(u => u.Username).IsRequired().HasMaxLength(64);
                 b.Property(u => u.PasswordHash).IsRequired();
                 b.Property(u => u.IconSvg).IsRequired();
-                b.Property(u => u.IsAdmin).IsRequired().HasDefaultValue(false);
+                b.Property(u => u.Role).IsRequired().HasDefaultValue(UserRole.Guest);
                 b.Property(u => u.DarkModeEnabled).IsRequired().HasDefaultValue(false);
                 b.HasIndex(u => u.Username).IsUnique();
             });
