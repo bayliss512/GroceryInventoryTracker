@@ -2,12 +2,17 @@
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
+    var canManageShipments = User.IsInRole("Administrator") || User.IsInRole("Employee");
+    var canDeleteShipments = User.IsInRole("Administrator");
 }
 
 <div class="inventory-page">
-    <header class="page-header mb-4">
-        <h1>Grocery Inventory Tracker</h1>
-        <p class="lead">Employee Inventory Dashboard</p>
+    <header class="page-header mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h1>Grocery Inventory Tracker</h1>
+            <p class="lead">Employee Inventory Dashboard</p>
+        </div>
+        <button type="button" id="scanQrBtn" class="btn btn-outline-primary"><svg class="icon"><use href="#icon-scan"></use></svg>Scan QR Code</button>
     </header>
 
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
@@ -59,7 +64,9 @@
     </div>
 
     <!-- Product Modal -->
-    <div id="productModal" class="custom-modal" role="dialog" aria-hidden="true">
+    <div id="productModal" class="custom-modal" role="dialog" aria-hidden="true"
+         data-can-manage-shipments="@(canManageShipments ? "true" : "false")"
+         data-can-delete-shipments="@(canDeleteShipments ? "true" : "false")">
         <div class="custom-modal-dialog">
             <div class="custom-modal-content">
                 <div class="custom-modal-header">
@@ -72,8 +79,28 @@
             </div>
         </div>
     </div>
+
+    <!-- QR Scanner Modal -->
+    <div id="scannerModal" class="custom-modal" role="dialog" aria-hidden="true">
+        <div class="custom-modal-dialog">
+            <div class="custom-modal-content">
+                <div class="custom-modal-header">
+                    <h5>Scan Shipment QR Code</h5>
+                    <button id="scannerModalClose" class="btn-close" aria-label="Close">×</button>
+                </div>
+                <div class="custom-modal-body">
+                    <div id="scannerError" class="alert alert-danger d-none" role="alert"></div>
+                    <div class="scanner-video-wrap">
+                        <video id="scannerVideo" playsinline muted></video>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">Point your camera at a shipment's QR code.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="~/lib/qrcode-generator/qrcode.js"></script>
+<script src="~/lib/jsqr/jsQR.js"></script>
 <!-- inventory.js is loaded globally from _Layout.cshtml -->
 

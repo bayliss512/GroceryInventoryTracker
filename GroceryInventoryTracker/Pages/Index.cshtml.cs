@@ -13,11 +13,15 @@ namespace GroceryInventoryTracker.Pages
     {
         private readonly ProductService _service;
         private readonly SupplierService _suppliers;
+        private readonly ShipmentService _shipments;
+        private readonly AuditService _audit;
 
-        public IndexModel(ProductService service, SupplierService suppliers)
+        public IndexModel(ProductService service, SupplierService suppliers, ShipmentService shipments, AuditService audit)
         {
             _service = service;
             _suppliers = suppliers;
+            _shipments = shipments;
+            _audit = audit;
         }
 
         public List<Product> Products { get; set; } = new();
@@ -161,6 +165,93 @@ namespace GroceryInventoryTracker.Pages
             {
                 return new JsonResult(new { error = "Unable to load shipments. The database may not be properly initialized." }) { StatusCode = 500 };
             }
+        }
+
+        /// <summary>
+        /// Looks up a single shipment by its shipment number (the value encoded in its QR
+        /// code), for the QR scanner. Returns 404 if no shipment matches.
+        /// </summary>
+        public async Task<IActionResult> OnGetShipmentByNumberAsync(string shipmentNumber)
+        {
+            if (string.IsNullOrWhiteSpace(shipmentNumber))
+            {
+                return new JsonResult(new { error = "No shipment number provided." }) { StatusCode = 400 };
+            }
+
+            try
+            {
+                var shipment = await _shipments.GetByShipmentNumberAsync(shipmentNumber.Trim());
+                if (shipment == null)
+                {
+                    return new JsonResult(new { error = $"No shipment found for '{shipmentNumber}'." }) { StatusCode = 404 };
+                }
+
+                return new JsonResult(new
+                {
+                    shipment.Id,
+                    shipmentNumber = shipment.ShipmentNumber,
+                    expirationDate = shipment.ExpirationDate,
+                    quantity = shipment.Quantity,
+                    location = shipment.Location,
+                    productId = shipment.ProductId,
+                    productName = shipment.Product?.Name
+                });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { error = "Unable to look up that shipment. The database may not be properly initialized." }) { StatusCode = 500 };
+            }
+        }
+
+        /// <summary>
+        /// Quick action from the shipment QR/detail view: moves a shipment between In Storage
+        /// and On Floor. Employees and Administrators only (mirrors Shipments Create/Edit).
+        /// </summary>
+        public async Task<IActionResult> OnPostSetShipmentLocationAsync(int id, string location)
+        {
+            if (!User.IsInRole("Administrator") && !User.IsInRole("Employee"))
+            {
+                return StatusCode(403);
+            }
+
+            if (location != "InStorage" && location != "OnFloor")
+            {
+                return new JsonResult(new { error = "Invalid location." }) { StatusCode = 400 };
+            }
+
+            var shipment = await _shipments.GetByIdAsync(id);
+            if (shipment == null || !await _shipments.SetLocationAsync(id, location))
+            {
+                return new JsonResult(new { error = "Shipment not found." }) { StatusCode = 404 };
+            }
+
+            await _audit.LogAsync(User.Identity?.Name, "ShipmentLocationChanged",
+                $"Moved shipment '{shipment.ShipmentNumber}' (Id={id}) to {(location == "OnFloor" ? "On Sales Floor" : "In Storage")}.");
+
+            return new JsonResult(new { success = true, location });
+        }
+
+        /// <summary>
+        /// Quick action from the shipment QR/detail view: deletes a shipment.
+        /// Administrators only, matching the delete permission on the Shipments page.
+        /// </summary>
+        public async Task<IActionResult> OnPostDeleteShipmentAsync(int id)
+        {
+            if (!User.IsInRole("Administrator"))
+            {
+                return StatusCode(403);
+            }
+
+            var shipment = await _shipments.GetByIdAsync(id);
+            if (shipment == null || !await _shipments.DeleteAsync(id))
+            {
+                return new JsonResult(new { error = "Shipment not found." }) { StatusCode = 404 };
+            }
+
+            await _audit.LogAsync(User.Identity?.Name, "ShipmentDeleted",
+                $"Deleted shipment '{shipment.ShipmentNumber}' (Id={id}) for '{shipment.Product?.Name}'.");
+
+            return new JsonResult(new { success = true });
         }
 
         /// <summary>

@@ -42,6 +42,15 @@ namespace GroceryInventoryTracker.Services
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
+        public async Task<Shipment?> GetByShipmentNumberAsync(string shipmentNumber)
+        {
+            return await _db.Shipments
+                .Include(s => s.Product)
+                .Include(s => s.Supplier)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.ShipmentNumber == shipmentNumber);
+        }
+
         public async Task<Shipment> CreateAsync(Shipment shipment)
         {
             shipment.CreatedAt = DateTime.UtcNow;
@@ -70,6 +79,23 @@ namespace GroceryInventoryTracker.Services
             shipment.Quantity = updated.Quantity;
             shipment.Location = updated.Location;
 
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// Quick-action update of just a shipment's location (In Storage / On Floor).
+        /// Returns false if the shipment does not exist.
+        /// </summary>
+        public async Task<bool> SetLocationAsync(int id, string location)
+        {
+            var shipment = await _db.Shipments.FirstOrDefaultAsync(s => s.Id == id);
+            if (shipment == null)
+            {
+                return false;
+            }
+
+            shipment.Location = location;
             await _db.SaveChangesAsync();
             return true;
         }

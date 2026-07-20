@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalClose = document.getElementById('productModalClose');
     const searchResults = document.getElementById('searchResults');
     const qrPrintArea = document.getElementById('qrPrintArea');
+    const canManageShipments = modal && modal.getAttribute('data-can-manage-shipments') === 'true';
+    const canDeleteShipments = modal && modal.getAttribute('data-can-delete-shipments') === 'true';
 
     // Debounced live search: fetch just the results partial and swap it in, so the page
     // no longer does a full reload while the user is still typing. The Search button and
@@ -82,9 +84,50 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Renders a shipment's QR code (encoding the shipment number) plus its details inside
-    // the product modal, with a way back to the shipment list and a button to print just this view.
-    function showShipmentQr(shipment, productName, shipmentListHtml) {
+    // Shared formatting so the shipment list, the QR/detail view, and the scanner result all
+    // render expiration and location the same way.
+    function formatExpiration(expirationDate) {
+        if (!expirationDate) return { display: '—', badge: '' };
+
+        const EXPIRING_SOON_DAYS = 7;
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        const expDate = new Date(expirationDate);
+        const display = expDate.toLocaleDateString();
+
+        const expDay = new Date(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
+        const daysUntilExpiry = Math.round((expDay - startOfToday) / 86400000);
+
+        let badge = '';
+        if (daysUntilExpiry < 0) {
+            badge = ' <span class="badge bg-danger">Expired</span>';
+        } else if (daysUntilExpiry <= EXPIRING_SOON_DAYS) {
+            const label = daysUntilExpiry === 0
+                ? 'Expires today'
+                : 'Expires in ' + daysUntilExpiry + ' day' + (daysUntilExpiry === 1 ? '' : 's');
+            badge = ' <span class="badge bg-warning text-dark">' + label + '</span>';
+        }
+
+        return { display: display, badge: badge };
+    }
+
+    function formatLocation(location) {
+        const display = location === 'OnFloor' ? 'On Sales Floor' : 'In Storage';
+        const badge = location === 'OnFloor'
+            ? '<span class="badge bg-success">On Sales Floor</span>'
+            : '<span class="badge bg-info">In Storage</span>';
+        return { display: display, badge: badge };
+    }
+
+    // Renders a shipment's QR code (encoding the shipment number) plus its details inside the
+    // product modal. Includes quick-action buttons (move to floor/storage, delete) when the
+    // signed-in user is allowed to use them, a print button, and a back/close control.
+    // `options.onBack`, if given, returns to the shipment list for the product instead of
+    // closing the modal (used when opened by clicking a row rather than the QR scanner).
+    function showShipmentQr(shipment, productName, options) {
+        options = options || {};
+
         const qr = qrcode(0, 'M');
         qr.addData(shipment.shipmentNumber);
         qr.make();
@@ -99,25 +142,91 @@ document.addEventListener('DOMContentLoaded', function () {
             '<tr><th>Location</th><td>' + shipment.locationDisplay + '</td></tr>' +
             '</table>';
 
-        if (modalTitle) modalTitle.textContent = 'Shipment QR Code';
+        let actionButtons = '';
+        if (canManageShipments) {
+            if (shipment.location !== 'OnFloor') {
+                actionButtons += '<button type="button" class="btn btn-outline-success btn-sm" id="qrMoveFloorBtn">Move to Floor</button> ';
+            }
+            if (shipment.location !== 'InStorage') {
+                actionButtons += '<button type="button" class="btn btn-outline-info btn-sm" id="qrMoveStorageBtn">Move to Storage</button> ';
+            }
+        }
+        if (canDeleteShipments) {
+            actionButtons += '<button type="button" class="btn btn-outline-danger btn-sm" id="qrDeleteBtn">Delete</button>';
+        }
+
+        const backLabel = options.onBack ? '&larr; Back to shipments' : '&larr; Close';
+
+        if (modalTitle) modalTitle.textContent = 'Shipment Details';
         if (modalBody) {
             modalBody.innerHTML =
-                '<button type="button" class="btn btn-link ps-0 mb-2" id="qrBackBtn">&larr; Back to shipments</button>' +
+                '<button type="button" class="btn btn-link ps-0 mb-2" id="qrBackBtn">' + backLabel + '</button>' +
+                '<div id="qrActionError" class="alert alert-danger py-2 d-none" role="alert"></div>' +
                 '<div class="qr-view text-center">' +
                 '<div class="qr-code-wrap mb-3">' + qrSvg + '</div>' +
                 detailsHtml +
                 '</div>' +
+                (actionButtons ? '<div class="d-flex justify-content-center flex-wrap gap-2 mt-3">' + actionButtons + '</div>' : '') +
                 '<div class="text-end mt-3">' +
                 '<button type="button" class="btn btn-primary" id="qrPrintBtn"><svg class="icon"><use href="#icon-printer"></use></svg>Print</button>' +
                 '</div>';
         }
 
+        function showActionError(message) {
+            const errorBox = document.getElementById('qrActionError');
+            if (!errorBox) return;
+            errorBox.textContent = message;
+            errorBox.classList.remove('d-none');
+        }
+
         const backBtn = document.getElementById('qrBackBtn');
         if (backBtn) {
             backBtn.addEventListener('click', function () {
-                if (modalTitle) modalTitle.textContent = productName || 'Product Details';
-                if (modalBody) modalBody.innerHTML = shipmentListHtml;
-                bindShipmentRows(shipmentListHtml, productName);
+                if (options.onBack) {
+                    options.onBack();
+                } else {
+                    closeModal();
+                }
+            });
+        }
+
+        const moveFloorBtn = document.getElementById('qrMoveFloorBtn');
+        if (moveFloorBtn) {
+            moveFloorBtn.addEventListener('click', function () {
+                postWithAntiForgery('/Index?handler=SetShipmentLocation', { id: shipment.id, location: 'OnFloor' })
+                    .then(function () {
+                        shipment.location = 'OnFloor';
+                        shipment.locationDisplay = formatLocation('OnFloor').display;
+                        showShipmentQr(shipment, productName, options);
+                    })
+                    .catch(function (err) { showActionError(err.message); });
+            });
+        }
+
+        const moveStorageBtn = document.getElementById('qrMoveStorageBtn');
+        if (moveStorageBtn) {
+            moveStorageBtn.addEventListener('click', function () {
+                postWithAntiForgery('/Index?handler=SetShipmentLocation', { id: shipment.id, location: 'InStorage' })
+                    .then(function () {
+                        shipment.location = 'InStorage';
+                        shipment.locationDisplay = formatLocation('InStorage').display;
+                        showShipmentQr(shipment, productName, options);
+                    })
+                    .catch(function (err) { showActionError(err.message); });
+            });
+        }
+
+        const deleteBtn = document.getElementById('qrDeleteBtn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function () {
+                if (typeof window.showConfirmModal !== 'function') return;
+                window.showConfirmModal('Delete shipment "' + shipment.shipmentNumber + '"? This cannot be undone.', function () {
+                    postWithAntiForgery('/Index?handler=DeleteShipment', { id: shipment.id })
+                        .then(function () {
+                            closeModal();
+                        })
+                        .catch(function (err) { showActionError(err.message); });
+                });
             });
         }
 
@@ -135,17 +244,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Wires up click handlers on each shipment row so clicking one shows its QR code.
-    function bindShipmentRows(shipmentListHtml, productName) {
+    // Wires up click handlers on each shipment row in the currently rendered list so clicking
+    // one shows its details, with a back button that returns to a freshly reloaded list.
+    function bindShipmentRows(productId, productName) {
         if (!modalBody) return;
         modalBody.querySelectorAll('.shipment-row').forEach(function (row) {
             row.addEventListener('click', function () {
                 showShipmentQr({
+                    id: row.getAttribute('data-shipment-id'),
                     shipmentNumber: row.getAttribute('data-shipment-number'),
                     expirationDisplay: row.getAttribute('data-expiration-display'),
                     quantity: row.getAttribute('data-quantity'),
+                    location: row.getAttribute('data-location'),
                     locationDisplay: row.getAttribute('data-location-display')
-                }, productName, shipmentListHtml);
+                }, productName, {
+                    onBack: function () { loadShipmentsForProduct(productId, productName); }
+                });
             });
         });
     }
@@ -156,78 +270,190 @@ document.addEventListener('DOMContentLoaded', function () {
         if (qrPrintArea) qrPrintArea.innerHTML = '';
     });
 
+    function renderShipmentRow(s) {
+        const exp = formatExpiration(s.expirationDate);
+        const loc = formatLocation(s.location);
+        return '<tr class="shipment-row" data-shipment-id="' + s.id + '" data-shipment-number="' + s.shipmentNumber + '" data-expiration-display="' + exp.display + '" data-quantity="' + s.quantity + '" data-location="' + s.location + '" data-location-display="' + loc.display + '">' +
+            '<td>' + s.shipmentNumber + '</td><td>' + exp.display + exp.badge + '</td><td>' + s.quantity + '</td><td>' + loc.badge + '</td></tr>';
+    }
+
+    // Loads (or reloads) the shipment list for a product into the modal. Used both for the
+    // initial product-card click and to refresh the list after a quick action changes it.
+    function loadShipmentsForProduct(productId, productName) {
+        if (modalTitle) modalTitle.textContent = productName || 'Product Details';
+        if (modalBody) modalBody.innerHTML = '<p class="muted">Loading shipments...</p>';
+        openModal();
+
+        fetch('/Index?handler=Shipments&productId=' + productId)
+            .then(function (resp) {
+                if (!resp.ok) throw new Error('Network error');
+                return resp.json();
+            })
+            .then(function (data) {
+                if (!Array.isArray(data) || data.length === 0) {
+                    if (modalBody) modalBody.innerHTML = '<p>No shipments available.</p>';
+                    return;
+                }
+
+                const rows = data.map(renderShipmentRow).join('');
+                const shipmentListHtml = '<p class="text-muted small mb-2">Click a shipment to view and edit its details.</p>' +
+                    '<table class="table table-sm"><thead><tr><th>Shipment Number</th><th>Expiration Date</th><th>Quantity</th><th>Location</th></tr></thead><tbody>' + rows + '</tbody></table>';
+
+                if (modalBody) modalBody.innerHTML = shipmentListHtml;
+                bindShipmentRows(productId, productName);
+            })
+            .catch(function (err) {
+                console.error('Error loading shipments:', err);
+                if (modalBody) modalBody.innerHTML = '<p class="text-danger">Failed to load shipments.</p>';
+            });
+    }
+
     // Attach to product cards. Called on load and again after live-search swaps in new cards.
     function bindProductCards() {
-        document.querySelectorAll('.product-card').forEach(function(card) {
+        document.querySelectorAll('.product-card').forEach(function (card) {
             card.addEventListener('click', function () {
                 const id = card.getAttribute('data-product-id');
                 const name = card.getAttribute('data-product-name');
                 if (!id) return;
 
-                if (modalTitle) modalTitle.textContent = name || 'Product Details';
-                if (modalBody) modalBody.innerHTML = '<p class="muted">Loading shipments...</p>';
-                openModal();
-
-                fetch('/Index?handler=Shipments&productId=' + id)
-                    .then(function(resp) {
-                        if (!resp.ok) throw new Error('Network error');
-                        return resp.json();
-                    })
-                    .then(function(data) {
-                        if (!Array.isArray(data) || data.length === 0) {
-                            if (modalBody) modalBody.innerHTML = '<p>No shipments available.</p>';
-                            return;
-                        }
-
-                        const EXPIRING_SOON_DAYS = 7;
-                        const now = new Date();
-                        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-                        const rows = data.map(function(s) {
-                            var exp = '—';
-                            var expirationBadge = '';
-
-                            if (s.expirationDate) {
-                                const expDate = new Date(s.expirationDate);
-                                exp = expDate.toLocaleDateString();
-
-                                // Compare whole days between the expiration date and the start of today
-                                const expDay = new Date(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
-                                const daysUntilExpiry = Math.round((expDay - startOfToday) / 86400000);
-
-                                if (daysUntilExpiry < 0) {
-                                    expirationBadge = ' <span class="badge bg-danger">Expired</span>';
-                                } else if (daysUntilExpiry <= EXPIRING_SOON_DAYS) {
-                                    const label = daysUntilExpiry === 0
-                                        ? 'Expires today'
-                                        : 'Expires in ' + daysUntilExpiry + ' day' + (daysUntilExpiry === 1 ? '' : 's');
-                                    expirationBadge = ' <span class="badge bg-warning text-dark">' + label + '</span>';
-                                }
-                            }
-
-                            const locationDisplay = s.location === 'OnFloor' ? 'On Sales Floor' : 'In Storage';
-                            const locationBadge = s.location === 'OnFloor'
-                                ? '<span class="badge bg-success">On Sales Floor</span>'
-                                : '<span class="badge bg-info">In Storage</span>';
-                            return '<tr class="shipment-row" data-shipment-number="' + s.shipmentNumber + '" data-expiration-display="' + exp + '" data-quantity="' + s.quantity + '" data-location-display="' + locationDisplay + '">' +
-                                '<td>' + s.shipmentNumber + '</td><td>' + exp + expirationBadge + '</td><td>' + s.quantity + '</td><td>' + locationBadge + '</td></tr>';
-                        }).join('');
-
-                        const shipmentListHtml = '<p class="text-muted small mb-2">Click a shipment to view its QR code.</p>' +
-                            '<table class="table table-sm"><thead><tr><th>Shipment Number</th><th>Expiration Date</th><th>Quantity</th><th>Location</th></tr></thead><tbody>' + rows + '</tbody></table>';
-
-                        if (modalBody) {
-                            modalBody.innerHTML = shipmentListHtml;
-                        }
-                        bindShipmentRows(shipmentListHtml, name);
-                    })
-                    .catch(function(err) {
-                        console.error('Error loading shipments:', err);
-                        if (modalBody) modalBody.innerHTML = '<p class="text-danger">Failed to load shipments.</p>';
-                    });
+                loadShipmentsForProduct(id, name);
             });
         });
     }
+
+    // --- QR code scanner: looks up a shipment by scanning its printed/displayed QR code
+    // (which encodes the shipment number) and opens the same detail view as clicking a row. ---
+    const scanBtn = document.getElementById('scanQrBtn');
+    const scannerModal = document.getElementById('scannerModal');
+    const scannerModalClose = document.getElementById('scannerModalClose');
+    const scannerVideo = document.getElementById('scannerVideo');
+    const scannerError = document.getElementById('scannerError');
+    let scannerStream = null;
+    let scannerFrameRequest = null;
+    let scannerCanvas = null;
+
+    function showScannerError(message) {
+        if (!scannerError) return;
+        scannerError.textContent = message;
+        scannerError.classList.remove('d-none');
+    }
+
+    function hideScannerError() {
+        if (!scannerError) return;
+        scannerError.classList.add('d-none');
+    }
+
+    function openScannerModal() {
+        if (!scannerModal) return;
+        scannerModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeScannerModal() {
+        if (!scannerModal) return;
+        scannerModal.classList.remove('open');
+        document.body.style.overflow = '';
+        stopScanning();
+    }
+
+    function stopScanning() {
+        if (scannerFrameRequest) {
+            cancelAnimationFrame(scannerFrameRequest);
+            scannerFrameRequest = null;
+        }
+        if (scannerStream) {
+            scannerStream.getTracks().forEach(function (track) { track.stop(); });
+            scannerStream = null;
+        }
+        if (scannerVideo) scannerVideo.srcObject = null;
+    }
+
+    function scanFrame() {
+        if (!scannerStream || !scannerVideo || typeof jsQR !== 'function') return;
+
+        if (scannerVideo.readyState === scannerVideo.HAVE_ENOUGH_DATA) {
+            if (!scannerCanvas) scannerCanvas = document.createElement('canvas');
+            scannerCanvas.width = scannerVideo.videoWidth;
+            scannerCanvas.height = scannerVideo.videoHeight;
+            const ctx = scannerCanvas.getContext('2d');
+            ctx.drawImage(scannerVideo, 0, 0, scannerCanvas.width, scannerCanvas.height);
+            const imageData = ctx.getImageData(0, 0, scannerCanvas.width, scannerCanvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+            if (code && code.data) {
+                closeScannerModal();
+                lookupAndShowShipment(code.data);
+                return;
+            }
+        }
+
+        scannerFrameRequest = requestAnimationFrame(scanFrame);
+    }
+
+    function startScanning() {
+        hideScannerError();
+        openScannerModal();
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showScannerError('Camera access is not supported in this browser.');
+            return;
+        }
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(function (stream) {
+                scannerStream = stream;
+                if (scannerVideo) {
+                    scannerVideo.srcObject = stream;
+                    scannerVideo.play();
+                }
+                scannerFrameRequest = requestAnimationFrame(scanFrame);
+            })
+            .catch(function () {
+                showScannerError('Camera access is required to scan a QR code.');
+            });
+    }
+
+    function lookupAndShowShipment(shipmentNumber) {
+        fetch('/Index?handler=ShipmentByNumber&shipmentNumber=' + encodeURIComponent(shipmentNumber))
+            .then(function (resp) {
+                return resp.json().catch(function () { return {}; }).then(function (body) {
+                    if (!resp.ok) throw new Error(body.error || 'Shipment not found.');
+                    return body;
+                });
+            })
+            .then(function (s) {
+                openModal();
+                showShipmentQr({
+                    id: s.id,
+                    shipmentNumber: s.shipmentNumber,
+                    expirationDisplay: formatExpiration(s.expirationDate).display,
+                    quantity: s.quantity,
+                    location: s.location,
+                    locationDisplay: formatLocation(s.location).display
+                }, s.productName, {});
+            })
+            .catch(function (err) {
+                startScanning();
+                showScannerError(err.message);
+            });
+    }
+
+    if (scanBtn) {
+        scanBtn.addEventListener('click', startScanning);
+    }
+    if (scannerModalClose) {
+        scannerModalClose.addEventListener('click', closeScannerModal);
+    }
+    if (scannerModal) {
+        scannerModal.addEventListener('click', function (e) {
+            if (e.target === scannerModal) closeScannerModal();
+        });
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && scannerModal && scannerModal.classList.contains('open')) {
+            closeScannerModal();
+        }
+    });
 
     bindProductCards();
 });
