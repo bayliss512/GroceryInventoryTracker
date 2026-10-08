@@ -1,4 +1,5 @@
 using GroceryInventoryTracker.Data;
+using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -73,14 +74,19 @@ namespace GroceryInventoryTracker.Tests.Database
         /// <summary>
         /// Applies the real, on-disk migration files against a real SQL Server database —
         /// the only way to actually prove they run cleanly end-to-end, since they contain
-        /// SQL-Server-specific type strings a fake database can't execute. Requires a local
-        /// SQLEXPRESS instance (same one the app's default connection string targets); skip
-        /// or replace with a SQL Server service container in CI if one isn't available.
+        /// SQL-Server-specific type strings a fake database can't execute. Uses the server in the
+        /// MIGRATION_TEST_SQLSERVER connection string when set (CI points it at a SQL Server
+        /// service container), otherwise the local SQLEXPRESS instance the app targets by default.
         /// </summary>
         [Fact]
         public async Task Migrate_AppliesTheRealMigrationFilesAgainstSqlServer()
         {
-            var connectionString = $@"Server=.\SQLEXPRESS;Database=GroceryInventoryTrackerMigrationTest_{Guid.NewGuid():N};Trusted_Connection=True;TrustServerCertificate=True;";
+            var server = Environment.GetEnvironmentVariable("MIGRATION_TEST_SQLSERVER")
+                ?? @"Server=.\SQLEXPRESS;Trusted_Connection=True;TrustServerCertificate=True;";
+            var connectionString = new SqlConnectionStringBuilder(server)
+            {
+                InitialCatalog = $"GroceryInventoryTrackerMigrationTest_{Guid.NewGuid():N}"
+            }.ConnectionString;
             using var context = new InventoryDbContext(new DbContextOptionsBuilder<InventoryDbContext>().UseSqlServer(connectionString).Options);
             try
             {

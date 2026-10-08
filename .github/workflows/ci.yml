@@ -9,15 +9,33 @@ on:
 
 jobs:
   build-and-test:
-    # windows-latest is required, not just convenient: one integration test
-    # (MigrationsTests.Migrate_AppliesTheRealMigrationFilesAgainstSqlServer) applies the
-    # real, on-disk EF Core migrations against a live SQL Server using Trusted_Connection
-    # to "Server=.\SQLEXPRESS" — the same instance name/auth the app itself uses locally.
-    # GitHub's windows-latest runners ship with SQL Server Express pre-installed under
-    # that exact instance name, so this is the only runner that can exercise the real
-    # migration files (they contain SQL-Server-specific type strings the Sqlite-based
-    # tests can't validate) without adding a separate service container or SQL auth.
-    runs-on: windows-latest
+    # One integration test (MigrationsTests.Migrate_AppliesTheRealMigrationFilesAgainstSqlServer)
+    # applies the real, on-disk EF Core migrations against a live SQL Server, since they contain
+    # SQL-Server-specific type strings the Sqlite-based tests can't validate. CI provides that
+    # server as a service container (the same image docker-compose.yml runs in production) and
+    # points the test at it via MIGRATION_TEST_SQLSERVER. GitHub's Windows runners no longer
+    # ship SQL Server Express, which is what this job previously relied on.
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          # Throwaway container that only lives for this job and is reachable only from the runner.
+          MSSQL_SA_PASSWORD: "Ci-Only-Pa55word!"
+          MSSQL_PID: Express
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Ci-Only-Pa55word!' -C -Q 'SELECT 1' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 30s
+
+    env:
+      MIGRATION_TEST_SQLSERVER: "Server=localhost,1433;User Id=sa;Password=Ci-Only-Pa55word!;TrustServerCertificate=True;"
 
     steps:
       - name: Checkout

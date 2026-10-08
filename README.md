@@ -258,16 +258,16 @@ dotnet test GroceryInventoryTracker.slnx
   access control.
 - **Database/migrations** — that the current EF Core model has no pending changes against the latest
   migration, and that the real, on-disk migration files apply cleanly against a live SQL Server (this one
-  test needs a real SQL Server instance — see [CI/CD](#cicd) for how that's handled without a local install).
+  test needs a real SQL Server: it uses local `.\SQLEXPRESS` by default, or whatever server the
+  `MIGRATION_TEST_SQLSERVER` connection string names — see [CI/CD](#cicd)).
 
 ## CI/CD
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on every push/PR to `main`:
 
-1. **`build-and-test`** (runs on `windows-latest`, which ships with SQL Server Express pre-installed —
-   the only way to run the full suite, including the live-SQL-Server migration test, without a separate
-   database service) — restore → build → test → publish, with test results and the publish output
-   uploaded as build artifacts.
+1. **`build-and-test`** (runs on `ubuntu-latest` with a SQL Server 2022 service container, the same
+   image Docker Compose runs, so the live-SQL-Server migration test runs on every push) — restore →
+   build → test → publish, with test results and the publish output uploaded as build artifacts.
 2. **`docker-publish`** (on merges to `main` only) — builds the image from
    `GroceryInventoryTracker/Dockerfile` and pushes it to GitHub Container Registry
    (`ghcr.io/bayliss512/groceryinventorytracker`), tagged `latest` and with the commit SHA.
