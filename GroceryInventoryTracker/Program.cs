@@ -31,7 +31,17 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
 
 builder.Services.AddAuthorization();
 
+builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(
+    GroceryInventoryTracker.Services.ProxyForwarding.Configure);
+
+// The auth cookie already defaults to SameAsRequest; antiforgery defaults to never-Secure, so align it.
+builder.Services.AddAntiforgery(options =>
+    options.Cookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest);
+
 var app = builder.Build();
+
+// Must run first so everything after it (HSTS, redirects, auth cookies) sees the original https scheme.
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

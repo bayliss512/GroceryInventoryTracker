@@ -7,7 +7,7 @@ suppliers, and shipments — with role-based access control, a live dashboard, a
 who changed what. Built with Entity Framework Core against SQL Server, containerized with Docker, and
 covered by a 94-test xUnit suite that runs in CI on every push.
 
-I host this project through Cloudflare at http://grocery.cbayliss.org/
+Live demo: **https://grocery.ashleybayliss.com** (self-hosted behind a Cloudflare Tunnel).
 
 ## Overview
 
